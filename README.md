@@ -16,7 +16,7 @@ Also, this project assumes your connected to a domain and uses negiotiate  authe
  4. EntityFramework for Postgresql
 
 # Getting Started
-To get started with Semantic Kernel Web, follow these steps:
+To get started with AI Core, follow these steps:
  1. Clone the repository:
  2. Set up a SearXNG server.  This is linux based but can be run in docker.  I found a good article of how to set it up at https://docs.openwebui.com/tutorials/web-search/searxng  It's important that you follow the directions because if you don't it won't return json which is required for the web search plugin.
  3. Download Ollama and install it.
