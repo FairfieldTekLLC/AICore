@@ -1,0 +1,108 @@
+﻿@model AICore.Controllers.ViewModels.ConversationVm
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <div class="container">
+        <div>
+            ConversationId: <span id="ConversationId">@Model.Id</span>
+        </div>
+    </div>
+    <div class="container">
+        <h1 class="display-4">Welcome to the AI Prompt Generator</h1>
+        <p class="lead">This tool helps you create effective prompts for AI models.</p>
+        <p>Enter your prompt below and click "Generate" to see the result.</p>
+
+    </div>
+    <div id="txt-output">
+        @{
+            if (@Model.ConversationText != null)
+            {
+                WriteLiteral(@Model.ConversationText.ToString());
+            }
+        }
+        
+    </div>
+    <div>
+        <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>
+    </div>
+
+
+</div>
+*
+<div id="ImageToTextUpload">
+    <span>Attach a file!</span>
+    <input type="file" id="fileInput" value="Choose Image File"accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.ico,.svg,.pdf"/>
+    <button id="uploadButton" onclick="uploadFile()">Ask</button>
+    <div id="status"></div>
+
+</div>
+
+<script>
+
+        function uploadFile(){
+            
+            // if ($('#fileInput').val() === '') {
+            //     alert('Please select a file to upload.');
+            //     return;
+            // }
+
+            var conversationId = $("#ConversationId").html();
+            alert(conversationId);
+            var formData = new FormData();
+            var prompt = document.getElementById("txt-prompt").value;
+            var file = $('#fileInput')[0].files[0]; // Get the selected file
+            formData.append('uploadedFile', file); // 'uploadedFile' is the key for the server-side
+            formData.append('txtpromptimgtotext',prompt);
+            formData.append('conversationId',conversationId);
+
+            
+
+            $.ajax({
+                url: '@Url.Action("ImageToText", "Prompt")', // Your C# endpoint URL
+                type: 'POST',
+                data: formData,
+                contentType: false, // Important: Don't set content type
+                processData: false, // Important: Don't process data
+                success: function(response) {
+                    $('#status').html('<span class="text-success">File uploaded successfully! </span>');
+                    $('#fileInput').val(''); // Clear the file input
+                    console.log(response);
+                    $('#txt-output').empty().append(response);
+                },
+                error: function(xhr, status, error) {
+                    $('#status').html('<span class="text-danger">Error uploading file: ' + error + '</span>');
+                }
+            });
+        }
+         
+
+    // function ProcessPrompt() {
+    //     var prompt = document.getElementById("txt-prompt").value;
+    //     if (prompt.trim() === "") {
+    //         alert("Please enter a prompt.");
+    //         return;
+    //     }
+       
+
+    //     // Here you would typically send the prompt to your server for processing
+    //     // For example, using fetch or XMLHttpRequest
+    //      $.post('@Url.Action("ProcessPrompt", "Home")', {
+    //                  prompt: prompt,
+
+    //              }, function(data){
+    //                  $('#txt-output').empty().append(data);
+                        
+    //                     // Optionally, you can alert the result
+    //                 }).fail(function(xhr, status, error) {
+    //                     alert("Error occurred: " + error);
+    //              });
+    // }
+
+        function decodeHtmlEntities(encodedString) {
+      var textArea = document.createElement('textarea');
+      textArea.innerHTML = encodedString;
+      return textArea.value;
+    }
+</script>

@@ -1,0 +1,79 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<table>
+    <tr>
+        <td colspan="2">
+            Login
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Email:
+        </td>
+        <td>
+            <input type="text" id="txtemail" name=""/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Password:
+        </td>
+        <td>
+            <input type="text" id="txtpass" name=""/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="button" value="Login or create" onclick="Login()"/>
+        </td>
+    </tr>
+</table>
+<script>
+    function Login(){
+
+
+        var email1 = $("#txtemail").val();
+        var pass = $("#txtpass").val();
+
+           // if ($('#fileInput').val() === '') {
+           //     alert('Please select a file to upload.');
+           //     return;
+           // }
+
+
+           var formData = new FormData();
+           //var prompt = document.getElementById("txt-prompt").value;
+
+           //var file = $('#fileInput')[0].files[0]; // Get the selected file
+           //formData.append('uploadedFile', file); // 'uploadedFile' is the key for the server-side
+           formData.append('email',email1);
+           formData.append('password',pass);
+
+           $.ajax({
+               url: '@Url.Action("LoginOrCreateFunction", "Login")', // Your C# endpoint URL
+               type: 'POST',
+               data: formData,
+               contentType: false, // Important: Don't set content type
+               processData: false, // Important: Don't process data
+               success: function(response) {
+                   // $('#status').html('<span class="text-success">File uploaded successfully! </span>');
+                   // $('#fileInput').val(''); // Clear the file input
+                   // console.log(response);
+                   // $('#txt-output').empty().append(response);
+                  console.log(response);
+                   if (response.Authorized==true)
+                   {
+                       alert("Good");
+                       window.location.replace('@Url.Action("ConversationList", "Conversation")');
+                   }
+
+               },
+               error: function(xhr, status, error) {
+                   $('#status').html('<span class="text-danger">Error uploading file: ' + error + '</span>');
+               }
+           });
+       }
+</script>

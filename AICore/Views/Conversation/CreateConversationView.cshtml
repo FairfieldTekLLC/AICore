@@ -1,0 +1,49 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<script>
+     function CreateConversation(){
+        var title = $("#txtTitle").val();
+        var description = $("#txtDescription").val();
+
+        $.post('@Url.Action("CreateConversation", "Conversation")', {
+                     title: title,
+                     description: description
+                 }, function(data){
+                        location.reload(); // Reload the page to see the new conversation
+                    }).fail(function(xhr, status, error) {
+                        alert("Error occurred: " + error);
+                 });
+    }
+    function Cancel(){
+        $("#staticBackdrop").modal('hide');
+    }
+</script>
+
+<table style="width:100%">
+    <tr>
+        <td>
+            <span>Title</span>
+        </td>
+        <td>
+            <input type="text" id="txtTitle"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span>Description</span>
+        </td>
+        <td>
+            <input type="text" id="txtDescription"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="button" value="Create" onclick="CreateConversation()"/>
+            <input type="button" value="Cancel" onclick="Cancel()"/>
+        </td>
+    </tr>
+
+</table>

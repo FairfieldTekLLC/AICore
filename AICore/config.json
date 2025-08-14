@@ -1,0 +1,18 @@
+{
+  "ComfyOutPutFolder": "C:\\Comfy\\ComfyUI\\output\\",
+  "EmbeddingModel": "granite3-dense:8b",
+  "Model": "PetrosStav/gemma3-tools:12b",
+  "OllamaServerUrl": "http://localhost:11434",
+  "SearXngUrl": "http://10.10.11.71:8080?results_on_new_tabs=1&language=en&format=json&q=",
+  "ignoreSites": [
+    "nytimes"
+  ],
+  "SystemPrompt": "You are a helpful assistant replying to user questions using information from your memory.\r\nReply very verbosely using bullet points and new lines.\r\nSometimes you don't have relevant memories so you reply saying you don't know, don't have the information.",
+  "DatabaseName": "<Database>",
+  "ConnectionString": "Host=<PostGreSqlServer>;Port=5432;Username=<UserName>;Password=<Password>; Include Error Detail=true;database=<Database>",
+  "LogFilePath": "C:\\Logs\\SematicKernelWeb\\",
+  "CurrentLogLevel": 2,
+  "ComfyUrl": "http://localhost:8188/prompt",
+  "VisionModel": "llava:13b"
+
+}

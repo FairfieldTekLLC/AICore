@@ -1,0 +1,60 @@
+﻿@model List<AICore.Controllers.ViewModels.ConversationVm>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<script>
+    function OpenChat(id) {
+        window.location.href = '@Url.Action("ProcessPrompt", "Prompt")' + '?conversationId=' + id;
+    }
+
+
+
+    function DeleteChat(id){
+        $.post('@Url.Action("DeleteConversation", "Conversation")', {
+                     conversationId: id
+                 }, function(data){
+                        location.reload(); // Reload the page to see the new conversation
+                    }).fail(function(xhr, status, error) {
+                        alert("Error occurred: " + error);
+                 });
+
+
+    }
+    function CreateNewConversation_click (e)
+    {
+
+
+    }
+   
+
+</script>
+<h1>Welcome, @User.Identity.Name</h1>
+
+<button id="btn-create-conversation" type="button" class="btn btn-primary" data-id='@Url.Action("CreateConversationView", "Conversation")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Create New Conversation</button>
+
+
+<table style="width:100%">
+    <tr>
+        <td>ID</td>
+        <td>Title</td>
+        <td>Description</td>
+        <td>Actions</td>
+    </tr>
+    @foreach (var conversation in Model)
+    {
+        <tr>
+            <td>@conversation.Id</td>
+            <td>@conversation.Title</td>
+            <td>@conversation.Description</td>
+            <td>
+                <input value="Open" type="button" onclick="OpenChat('@conversation.Id')"/>
+            </td>
+            <td>
+                <input value="Delete" type="button" onclick="DeleteChat('@conversation.Id')"/>
+            </td>
+        </tr>
+    }
+</table>
+
