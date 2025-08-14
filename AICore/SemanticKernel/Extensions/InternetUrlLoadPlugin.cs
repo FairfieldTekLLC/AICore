@@ -1,82 +1,50 @@
-﻿//using System.ComponentModel;
-//using System.Diagnostics;
-//using Microsoft.SemanticKernel;
-//using SematicKernelWeb.Domain;
-//using SematicKernelWeb.Domain.Data_Classes;
-//using SematicKernelWeb.Services;
+﻿using AICore.Classes;
+using AICore.SemanticKernel;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System.ComponentModel;
+using System.Text;
 
-//namespace SematicKernelWeb.SemanticKernel.Extensions;
+namespace SematicKernelWeb.SemanticKernel.Extensions;
 
-//public class InternetUrlLoadPlugin
-//{
-//    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-//    public InternetUrlLoadPlugin(IBackendWorker backend, IServiceScopeFactory scopeFactory)
-//    {
-//        _backend = backend;
-//        _serviceScopeFactory = scopeFactory;
-//    }
-
-//    private IBackendWorker _backend { get; }
+public class InternetUrlLoadPlugin
+{
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private ISemanticKernelService _kernal;
+    public InternetUrlLoadPlugin( IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
+    {
+        _kernal= kernal;
+        _serviceScopeFactory = scopeFactory;
+    }
 
 
-//    [KernelFunction("load-the-url")]
-//    [Description("Loads the passed url into the long term memory.")]
-//    public async Task<string> LoadTheUrl(
-//        [Description("The conversation Id")] Guid conversationId,
-//        [Description("Owner Id")] Guid ownerId,
-//        [Description("url")] string url)
-//    {
-//        Conversation conversation;
-//        Guid conversationIdGuid = conversationId;
 
-//        if (conversationIdGuid == Guid.Empty) return "";
-//        conversation = new Conversation();
-//        conversation.Load(conversationIdGuid);
+    [KernelFunction("load-the-url")]
+    [Description("Load the url")]
+    public async Task<string> LoadTheUrl(
+        [Description("The conversation Id")] Guid conversationId,
+        [Description("Owner Id")] Guid ownerId,
+        [Description("url")] string url)
+    {
+        var col = new ChatMessageContentItemCollection();
+        string key = "";
+        try
+        {
+             key= _kernal.ImportWebPage(url, conversationId, ownerId).Result;
+        }
+        catch (Exception e)
+        {
+        }
+        
 
-//        Entry entry = new Entry
-//        {
-//            Type = ConversationType.WebSearch,
-//            Text = url,
-//            NumberOfResults = Conversation.MaxNumberOfResults,
-//            Role = Role.user,
-//            Sequence = conversation.PromptsOrSearches.Count + 1,
-//            FetchedDocuments = new List<HTMLDocs>()
-//        };
-//        _backend.getLogger()
-//            .LogInformation(
-//                "Internet Url Load Plugin called with url: \"{Url}\" Conversation Id : {ConversationId} Owner Id: {OwnerId}",
-//                url, conversationId, ownerId);
-
-//        _backend.SendMessage(conversationId, "(Plugin) Started Processing url: " + url).ConfigureAwait(true)
-//            .GetAwaiter().GetResult();
-
-//        Debug.WriteLine("Processing url: " + url);
-//        try
-//        {
-//            HTMLDocs doc = new HTMLDocs
-//            {
-//                Uri = url,
-//                Body = "",
-//                Summary = "",
-//                MemoryKey = _backend.getISemanticKernelService().ImportWebPage(url, conversationId, ownerId).Result
-//            };
-//            entry.FetchedDocuments.Add(doc);
-//        }
-//        catch (Exception e)
-//        {
-//            _backend.getLogger().LogError(e, "Error processing url: {Url} for conversation Id: {ConversationId}", url,
-//                conversationId);
-//        }
-
-
-//        Debug.WriteLine("Finished loading file! " + url);
-//        _backend.SendMessage(conversationId, "(Plugin) Finished Processing url: " + url).ConfigureAwait(true)
-//            .GetAwaiter().GetResult();
-
-//        _backend.getLogger().LogInformation("Internet Url Load Plugin completed for conversation Id: {ConversationId}",
-//            conversationId);
-//        return "ok";
-//    }
-//}
+        if (!string.IsNullOrEmpty(key))
+#pragma warning disable SKEXP0110
+            col.Add(new FileReferenceContent(key));
+#pragma warning restore SKEXP0110
+        ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
+        _hist.AddMessage(AuthorRole.System, col, Encoding.ASCII, new Dictionary<string, object>());
+        StaticHelpers.SaveChatHistory(conversationId, _hist);
+        return "ok";
+    }
+}
 

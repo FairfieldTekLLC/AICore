@@ -2,7 +2,13 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-
+<style>
+    .accordion-button{
+                background-color: aqua !important;
+        color: #343a40;
+        border: 1px solid #ced4da;
+    }
+</style>
 <div class="text-center">
     <div class="container">
         <div>
@@ -42,14 +48,8 @@
 <script>
 
         function uploadFile(){
-            
-            // if ($('#fileInput').val() === '') {
-            //     alert('Please select a file to upload.');
-            //     return;
-            // }
-
             var conversationId = $("#ConversationId").html();
-            alert(conversationId);
+            //alert(conversationId);
             var formData = new FormData();
             var prompt = document.getElementById("txt-prompt").value;
             var file = $('#fileInput')[0].files[0]; // Get the selected file
@@ -78,27 +78,6 @@
         }
          
 
-    // function ProcessPrompt() {
-    //     var prompt = document.getElementById("txt-prompt").value;
-    //     if (prompt.trim() === "") {
-    //         alert("Please enter a prompt.");
-    //         return;
-    //     }
-       
-
-    //     // Here you would typically send the prompt to your server for processing
-    //     // For example, using fetch or XMLHttpRequest
-    //      $.post('@Url.Action("ProcessPrompt", "Home")', {
-    //                  prompt: prompt,
-
-    //              }, function(data){
-    //                  $('#txt-output').empty().append(data);
-                        
-    //                     // Optionally, you can alert the result
-    //                 }).fail(function(xhr, status, error) {
-    //                     alert("Error occurred: " + error);
-    //              });
-    // }
 
         function decodeHtmlEntities(encodedString) {
       var textArea = document.createElement('textarea');

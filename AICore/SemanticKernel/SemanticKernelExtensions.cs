@@ -91,9 +91,9 @@ public static class SemanticKernelExtensions
             builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
 
 
-        //InternetUrlLoadPlugin internetUrlLoadPlugin = new InternetUrlLoadPlugin(
-        //    builder.Services.BuildServiceProvider().GetRequiredService<IBackendWorker>(),
-        //    builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>());
+        InternetUrlLoadPlugin internetUrlLoadPlugin = new InternetUrlLoadPlugin(
+            builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
+            builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
 
 
         ComfyPlugin comfyPlugin = new ComfyPlugin(
@@ -102,7 +102,7 @@ public static class SemanticKernelExtensions
 
 
         kernel.ImportPluginFromObject(internetSearchPlugin, "Internet_Search");
-        //kernel.ImportPluginFromObject(internetUrlLoadPlugin, "internetUrlLoadPlugin");
+        kernel.ImportPluginFromObject(internetUrlLoadPlugin, "internetUrlLoadPlugin");
         kernel.ImportPluginFromObject(comfyPlugin, "ComfyPlugin");
     }
 }

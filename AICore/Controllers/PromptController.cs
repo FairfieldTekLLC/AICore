@@ -69,16 +69,8 @@ namespace AICore.Controllers
             int lastcount = 0;
             foreach (ChatMessageContent content in _hist)
             {
-                if (content.Role == AuthorRole.User)
-                {
-                    
-                        lastcount++;
-                }
-                else if (content.Role == AuthorRole.Assistant)
-                {
-                    
-                        lastcount++;
-                }
+                if (content.Role == AuthorRole.User || content.Role == AuthorRole.Assistant)
+                    lastcount++;
             }
 
 
@@ -86,57 +78,32 @@ namespace AICore.Controllers
             foreach (ChatMessageContent content in _hist)
             {
 
-                if (content.Role == AuthorRole.User)
+                if ((content.Role == AuthorRole.User) || (content.Role == AuthorRole.Assistant))
                 {
                     counter++;
                     string html = "<div>";
                     foreach (var contentItem in content.Items)
                     {
-                        
-                        if (contentItem is TextContent textContent)
+                        switch (contentItem)
                         {
-                            html += "<div>" + textContent.Text + "</div>";
-                        }
-                            
-                        else if (contentItem is ImageContent imageContent)
-                        {
-                            html += "<div>" + "<img style='width:100px;height:100px' src='data:" +
-                                    imageContent.MimeType +
-                                    ";base64," +
-                                    Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
+                            case TextContent textContent:
+                                html += "<div>" + textContent.Text + "</div>";
+                                break;
+                            case ImageContent imageContent:
+                                html += "<div>" + "<img style='width:300px;height:300px' src='data:" +
+                                        imageContent.MimeType +
+                                        ";base64," +
+                                        Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
+                                break;
                         }
                     }
 
                     html += "</div>";
-                    output += MakeAccordian("User", html, counter, lastcount == counter);
+                    output = MakeAccordian(content.Role.Label.FirstCharToUpper(), html, counter, lastcount == counter) + output;
 
 
 
 
-                }
-                else if (content.Role == AuthorRole.Assistant)
-                {
-                    string html = "<div>";
-                    counter++;
-                    foreach (var contentItem in content.Items)
-                    {
-                        
-                        if (contentItem is TextContent textContent)
-                        {
-                            //output += MakeAccordian("User", textContent.Text, counter, lastcount == counter);
-                            html += "<div>" + textContent.Text + "</div>";
-                        }
-
-                        else if (contentItem is ImageContent imageContent)
-                        {
-                            html += "<div>" + "<img style='width:100px;height:100px' src='data:" +
-                                    imageContent.MimeType +
-                                    ";base64," +
-                                    Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
-                        }
-                    }
-                    html += "</div>";
-                    output += MakeAccordian("Assistant", html, counter, lastcount == counter);
                 }
             }
 
@@ -148,11 +115,11 @@ namespace AICore.Controllers
             string output = @$"
     <div class=""accordion-item"">
     <h2 class=""accordion-header"">
-      <button class=""accordion-button"" type=""button"" data-bs-toggle=""collapse"" data-bs-target=""#collapse{instance}"" aria-expanded=""true"" aria-controls=""collapse{instance}"">
+      <button class=""accordion-button""  type=""button"" data-bs-toggle=""collapse"" data-bs-target=""#collapse{instance}"" aria-expanded=""true"" aria-controls=""collapse{instance}"">
         {title}
       </button>
     </h2>
-    <div id=""collapse{instance}"" class=""accordion-collapse collapse {(show ? "show" : "")}"" data-bs-parent=""#accordionExample"">
+    <div id=""collapse{instance}"" class=""accordion-collapse collapse {(show ? "show" : "")}"" data-bs-parent=""#accordionFlushExample"">
       <div class=""accordion-body"" style='text-align: left;'>
         {body.Replace("\n", "</br>")}
       </div>
@@ -174,20 +141,18 @@ namespace AICore.Controllers
 
             if (uploadedFile == null || uploadedFile.Count == 0)
             {
-                string longTermMemory = await _semanticKernelService.AskAsync(txtpromptimgtotext, conversationId, GetOwnerId());
 
 
-                var col = new ChatMessageContentItemCollection() { };
-                
 
-
-                if (!string.IsNullOrEmpty(longTermMemory) && !longTermMemory.Equals("I'm sorry, I haven't found any relevant information that can be used to answer your question",StringComparison.CurrentCultureIgnoreCase))
-                    col.Add(new TextContent(longTermMemory) );
-                col.Add(new TextContent(txtpromptimgtotext));
-
-                var p = new Dictionary<string, object>();
-                p.Add("Conversation Id",conversationId.ToString());
-                p.Add("Owner Id", GetOwnerId().ToString());
+                var col = new ChatMessageContentItemCollection
+                {
+                    new TextContent(txtpromptimgtotext)
+                };
+                var p = new Dictionary<string, object>
+                {
+                    { "Conversation Id", conversationId.ToString() },
+                    { "Owner Id", GetOwnerId().ToString() }
+                };
                 _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
             }
             else
@@ -238,9 +203,13 @@ namespace AICore.Controllers
                             };
                             break;
                     }
+                    var p = new Dictionary<string, object>
+                    {
+                        { "Conversation Id", conversationId.ToString() },
+                        { "Owner Id", GetOwnerId().ToString() }
+                    };
 
-
-                    _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, new Dictionary<string, object>());
+                    _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
                 }
             }
 
@@ -248,7 +217,7 @@ namespace AICore.Controllers
 
             var settings = new PromptExecutionSettings
             {
-                
+
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true),
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -262,6 +231,9 @@ namespace AICore.Controllers
 
 
             //Get the streaming chat message contents
+
+            
+
             IReadOnlyList<ChatMessageContent> result = await _semanticKernelService.GetChatService().GetChatMessageContentsAsync(
                 _hist,
                 kernel: _semanticKernelService.GetKernel(),
@@ -269,14 +241,8 @@ namespace AICore.Controllers
             );
 
             _hist = StaticHelpers.GetChatHistory(conversationId);
-
-
-
-
-
-            //IReadOnlyList<ChatMessageContent> result = await _semanticKernelService.GetChatService().GetChatMessageContentsAsync(_hist, settings, _semanticKernelService.GetKernel());
             StringBuilder output = new StringBuilder();
-            foreach (ChatMessageContent content in result) output.AppendLine(content.Role + " " + content.Content);
+            foreach (ChatMessageContent content in result) output.AppendLine(content.Content);
 
             string op = output.ToString();
             _hist.AddAssistantMessage(op);
