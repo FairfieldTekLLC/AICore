@@ -1,22 +1,21 @@
-﻿using AICore.Classes;
-using AICore.SemanticKernel;
+﻿using System.ComponentModel;
+using System.Text;
+using AICore.Classes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.ComponentModel;
-using System.Text;
 
-namespace SematicKernelWeb.SemanticKernel.Extensions;
+namespace AICore.SemanticKernel.Extensions;
 
 public class InternetUrlLoadPlugin
 {
+    private readonly ISemanticKernelService _kernal;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private ISemanticKernelService _kernal;
-    public InternetUrlLoadPlugin( IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
+
+    public InternetUrlLoadPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
     {
-        _kernal= kernal;
+        _kernal = kernal;
         _serviceScopeFactory = scopeFactory;
     }
-
 
 
     [KernelFunction("load-the-url")]
@@ -26,16 +25,16 @@ public class InternetUrlLoadPlugin
         [Description("Owner Id")] Guid ownerId,
         [Description("url")] string url)
     {
-        var col = new ChatMessageContentItemCollection();
+        ChatMessageContentItemCollection col = new ChatMessageContentItemCollection();
         string key = "";
         try
         {
-             key= _kernal.ImportWebPage(url, conversationId, ownerId).Result;
+            key = _kernal.ImportWebPage(url, conversationId, ownerId).Result;
         }
         catch (Exception e)
         {
         }
-        
+
 
         if (!string.IsNullOrEmpty(key))
 #pragma warning disable SKEXP0110
@@ -47,4 +46,3 @@ public class InternetUrlLoadPlugin
         return "ok";
     }
 }
-

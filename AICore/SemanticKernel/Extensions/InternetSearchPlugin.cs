@@ -1,39 +1,27 @@
-﻿using System.Collections.Concurrent;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using AICore.Classes;
-using AICore.Domain;
-using AICore.Domain.Data_Classes;
-using AICore.Models;
-using AICore.SemanticKernel;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Entry = AICore.Domain.Entry;
-using Role = AICore.Domain.Role;
 
-
-namespace SematicKernelWeb.SemanticKernel.Extensions;
+namespace AICore.SemanticKernel.Extensions;
 
 public class InternetSearchPlugin
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ISemanticKernelService _kernal;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public InternetSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
     {
-
         _serviceScopeFactory = scopeFactory;
         _kernal = kernal;
     }
 
 
-
     [KernelFunction("search_internet")]
     [Description("Search the internet for a subject.")]
     public async Task<string> SearchTheInternet(
-
         [Description("The conversation Id")] Guid conversationId,
         [Description("Owner Id")] Guid ownerId,
         [Description("for")] string searchString)
@@ -61,7 +49,6 @@ public class InternetSearchPlugin
     public async Task<string> ImportWebSearch(Guid conversationId, Guid ownerId, string passedSearchString)
     {
         using IServiceScope scope = _serviceScopeFactory.CreateScope();
-
 
 
         StringBuilder resultText = new StringBuilder();
@@ -105,7 +92,7 @@ public class InternetSearchPlugin
                 break;
         }
 
-        var col = new ChatMessageContentItemCollection();
+        ChatMessageContentItemCollection col = new ChatMessageContentItemCollection();
         Parallel.ForEach(urls, new ParallelOptions { MaxDegreeOfParallelism = 8 }, url =>
         {
             try
@@ -120,9 +107,8 @@ public class InternetSearchPlugin
             }
             catch (Exception e)
             {
-                Debug.WriteLine("Error! " + e.ToString());
+                Debug.WriteLine("Error! " + e);
             }
-
         });
 
         ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
@@ -132,4 +118,3 @@ public class InternetSearchPlugin
         return resultText.ToString();
     }
 }
-

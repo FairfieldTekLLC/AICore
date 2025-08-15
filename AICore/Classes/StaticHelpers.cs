@@ -2,10 +2,7 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Newtonsoft.Json;
-using System.Data;
-using System.IO;
-using System.Text;
-using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AICore.Classes;
 
@@ -15,72 +12,65 @@ public static class StaticHelpers
     {
         const string defaultContentType = "application/octet-stream";
 
-        var provider = new FileExtensionContentTypeProvider();
+        FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
 
         if (!provider.TryGetContentType(filePath, out string contentType)) contentType = defaultContentType;
 
         return contentType;
     }
 
-    static JsonSerializerSettings settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
     public static string SerializeThis<type>(this object obj)
     {
-        string jsonString = System.Text.Json.JsonSerializer.Serialize(obj);
+        string jsonString = JsonSerializer.Serialize(obj);
         return jsonString;
-
-        var json = JsonConvert.SerializeObject(obj, typeof(type), settings);
-        return json;
     }
 
     public static object DeserializeThis<type>(this string json)
     {
-        var doh = System.Text.Json.JsonSerializer.Deserialize<type>(json);
+        type? doh = JsonSerializer.Deserialize<type>(json);
         return doh;
-        var deserializedObj = JsonConvert.DeserializeObject<type>(json, settings);
-        return deserializedObj;
     }
 
     public static void SaveChatHistory(Guid conversationID, ChatHistory hist)
     {
-        using (var ctx = new NewsReaderContext())
-        {
-            var obj = ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationID);
-            obj.SerializedChat = hist.SerializeThis<ChatHistory>();
-            ctx.SaveChanges();
-        }
+        using NewsReaderContext ctx = new NewsReaderContext();
+        Conversation? obj = ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationID);
+        obj.Serializedchat = hist.SerializeThis<ChatHistory>();
+        ctx.SaveChanges();
     }
+
     public static ChatHistory GetChatHistory(Guid conversationId)
     {
         ChatHistory hist;
-        using (var ctx = new NewsReaderContext())
+        using NewsReaderContext ctx = new NewsReaderContext();
+        Conversation? obj = ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationId);
+        if (string.IsNullOrEmpty(obj.Serializedchat))
         {
-            var obj = ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationId);
-            if (string.IsNullOrEmpty(obj.SerializedChat))
-            {
-                hist = new ChatHistory();
+            hist = new ChatHistory();
 
-                string prompt = "Owner Id: " + obj.Fksecurityobjectowner + "\r";
-                prompt += "Conversation Id:" + conversationId + "\r";
+            string prompt = "Owner Id: " + obj.Fksecurityobjectowner + "\r";
+            prompt += "Conversation Id:" + conversationId + "\r";
 
 
-                hist.AddSystemMessage(prompt);
-                obj.SerializedChat = hist.SerializeThis<ChatHistory>();
-                ctx.SaveChanges();
-            }
-            else
-            {
-                hist = (ChatHistory)obj.SerializedChat.DeserializeThis<ChatHistory>();
-
-            }
+            hist.AddSystemMessage(prompt);
+            obj.Serializedchat = hist.SerializeThis<ChatHistory>();
+            ctx.SaveChanges();
+        }
+        else
+        {
+            hist = (ChatHistory)obj.Serializedchat.DeserializeThis<ChatHistory>();
         }
 
         return hist;
     }
-    public static string FirstCharToUpper(this string input) =>
-        input switch
+
+    public static string FirstCharToUpper(this string input)
+    {
+        return input switch
         {
             null => throw new ArgumentNullException(nameof(input)),
             "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
             _ => input[0].ToString().ToUpper() + input.Substring(1)
         };
+    }
 }

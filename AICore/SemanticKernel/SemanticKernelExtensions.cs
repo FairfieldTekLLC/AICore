@@ -5,7 +5,6 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using OllamaSharp;
-using SematicKernelWeb.SemanticKernel.Extensions;
 
 namespace AICore.SemanticKernel;
 
@@ -18,11 +17,8 @@ public static class SemanticKernelExtensions
             AllowMixingVolatileAndPersistentData = true
         };
 
-        IKernelMemory memory = new KernelMemoryBuilder(new ServiceCollection(){})
-            
+        IKernelMemory memory = new KernelMemoryBuilder(new ServiceCollection())
             .WithOllamaTextEmbeddingGeneration(Config.Instance.EmbeddingModel, Config.Instance.OllamaServerUrl)
-
-
             .WithOllamaTextGeneration(Config.Instance.Model, Config.Instance.OllamaServerUrl)
             .WithSearchClientConfig(new SearchClientConfig
             {
@@ -41,14 +37,13 @@ public static class SemanticKernelExtensions
             .Build<MemoryServerless>(kmbOptions);
 
 
-        var httpClient = new HttpClient();
+        HttpClient httpClient = new HttpClient();
         httpClient.Timeout = TimeSpan.FromMinutes(5);
         httpClient.BaseAddress = new Uri(Config.Instance.OllamaServerUrl);
-        var client = new OllamaApiClient(httpClient, Config.Instance.Model);
+        OllamaApiClient client = new OllamaApiClient(httpClient, Config.Instance.Model);
 
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-
 
 
         //Register the Ollama client
@@ -61,7 +56,7 @@ public static class SemanticKernelExtensions
         kernelBuilder.AddOllamaChatClient(client);
 
 
-        var embeddingClient = new OllamaApiClient(httpClient, Config.Instance.EmbeddingModel);
+        OllamaApiClient embeddingClient = new OllamaApiClient(httpClient, Config.Instance.EmbeddingModel);
         // Register the Ollama embedding generation client
         kernelBuilder.AddOllamaEmbeddingGenerator(embeddingClient);
 
@@ -73,9 +68,8 @@ public static class SemanticKernelExtensions
         Kernel kernel = kernelBuilder.Build();
 
 
-
         MemoryPlugin plugin = new MemoryPlugin(memory, "kernelMemory", waitForIngestionToComplete: true);
-        
+
         kernel.ImportPluginFromObject(plugin, "memory");
         kernel.ImportPluginFromType<TestPlugin>();
 
@@ -86,7 +80,6 @@ public static class SemanticKernelExtensions
 
 
         InternetSearchPlugin internetSearchPlugin = new InternetSearchPlugin(
-            
             builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
             builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
 

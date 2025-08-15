@@ -1,4 +1,4 @@
-﻿namespace AICore.Domain.Data_Classes;
+﻿namespace AICore.Classes;
 
 public class Result
 {

@@ -1,118 +1,96 @@
-﻿using AICore.Classes;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using AICore.Classes;
 using AICore.Controllers.ViewModels;
 using AICore.Models;
 using AICore.SemanticKernel;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Ollama;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace AICore.Controllers
+namespace AICore.Controllers;
+
+public class PromptController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService)
+    : BaseController(logger,
+        semanticKernelService)
 {
-    public class PromptController : BaseController
+    public IActionResult ProcessPrompt(Guid conversationId)
     {
-        public PromptController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService) : base(logger, semanticKernelService)
+        if (GetOwnerId() == Guid.Empty)
+            Response.Redirect("/Home/LoginOrCreate");
+
+        if (conversationId == Guid.Empty)
+            Response.Redirect("/Home/LoginOrCreate");
+
+
+        ConversationVm vm = new ConversationVm();
+        using (NewsReaderContext ctx = new NewsReaderContext())
         {
-        }
-
-        public IActionResult ProcessPrompt(Guid conversationId)
-        {
-            if (GetOwnerId() == Guid.Empty)
-                Response.Redirect("/Home/LoginOrCreate");
-
-            if (conversationId == Guid.Empty)
-                Response.Redirect("/Home/LoginOrCreate");
-
-
-            ConversationVm vm = new ConversationVm();
-            using (NewsReaderContext ctx = new NewsReaderContext())
+            Conversation? conversation =
+                ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationId);
+            if (conversation != null)
             {
-                Models.Conversation? conversation =
-                    ctx.Conversations.FirstOrDefault(x => x.Pkconversationid == conversationId);
-                if (conversation != null)
-                {
-                    vm.Id = conversation.Pkconversationid;
-                    vm.Title = conversation.Title;
-                    vm.Description = conversation.Description;
-                }
-                else
-                {
-                    vm.Id = Guid.Empty;
-                    vm.Title = "New Conversation";
-                    vm.Description = "This is a new conversation. Please add prompts or searches.";
-                }
-
-
-                ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
-
-                vm.ConversationText = BuildOutput(_hist);
+                vm.Id = conversation.Pkconversationid;
+                vm.Title = conversation.Title;
+                vm.Description = conversation.Description;
+            }
+            else
+            {
+                vm.Id = Guid.Empty;
+                vm.Title = "New Conversation";
+                vm.Description = "This is a new conversation. Please add prompts or searches.";
             }
 
 
+            ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
 
-
-
-            return View(vm);
+            vm.ConversationText = BuildOutput(_hist);
         }
-        public string BuildOutput(ChatHistory _hist)
-        {
-            bool first = true;
-            string output = "<div class=\"accordion accordion-flush\" id=\"accordionFlushExample\">";
-            int counter = 0;
 
-            int lastcount = 0;
-            foreach (ChatMessageContent content in _hist)
+
+        return View(vm);
+    }
+
+    public string BuildOutput(ChatHistory _hist)
+    {
+        bool first = true;
+        string output = "<div class=\"accordion accordion-flush\" id=\"accordionFlushExample\">";
+        int counter = 0;
+
+        int lastcount = _hist.Count(content => content.Role == AuthorRole.User || content.Role == AuthorRole.Assistant);
+
+
+        foreach (ChatMessageContent content in _hist)
+            if (content.Role == AuthorRole.User || content.Role == AuthorRole.Assistant)
             {
-                if (content.Role == AuthorRole.User || content.Role == AuthorRole.Assistant)
-                    lastcount++;
-            }
-
-
-
-            foreach (ChatMessageContent content in _hist)
-            {
-
-                if ((content.Role == AuthorRole.User) || (content.Role == AuthorRole.Assistant))
-                {
-                    counter++;
-                    string html = "<div>";
-                    foreach (var contentItem in content.Items)
+                counter++;
+                string html = "<div>";
+                foreach (KernelContent contentItem in content.Items)
+                    switch (contentItem)
                     {
-                        switch (contentItem)
-                        {
-                            case TextContent textContent:
-                                html += "<div>" + textContent.Text + "</div>";
-                                break;
-                            case ImageContent imageContent:
-                                html += "<div>" + "<img style='width:300px;height:300px' src='data:" +
-                                        imageContent.MimeType +
-                                        ";base64," +
-                                        Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
-                                break;
-                        }
+                        case TextContent textContent:
+                            html += "<div>" + textContent.Text + "</div>";
+                            break;
+                        case ImageContent imageContent:
+                            html += "<div>" + "<img style='width:300px;height:300px' src='data:" +
+                                    imageContent.MimeType +
+                                    ";base64," +
+                                    Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
+                            break;
                     }
 
-                    html += "</div>";
-                    output = MakeAccordian(content.Role.Label.FirstCharToUpper(), html, counter, lastcount == counter) + output;
-
-
-
-
-                }
+                html += "</div>";
+                output = MakeAccordian(content.Role.Label.FirstCharToUpper(), html, counter, lastcount == counter) +
+                         output;
             }
 
-            output += "</div>";
-            return output;
-        }
-        public string MakeAccordian(string title, string body, int instance, bool show = false)
-        {
-            string output = @$"
+        output += "</div>";
+        return output;
+    }
+
+    public string MakeAccordian(string title, string body, int instance, bool show = false)
+    {
+        string output = @$"
     <div class=""accordion-item"">
     <h2 class=""accordion-header"">
       <button class=""accordion-button""  type=""button"" data-bs-toggle=""collapse"" data-bs-target=""#collapse{instance}"" aria-expanded=""true"" aria-controls=""collapse{instance}"">
@@ -126,135 +104,130 @@ namespace AICore.Controllers
     </div></div>
   ";
 
-            return output;
-        }
+        return output;
+    }
 
-        [Experimental("SKEXP0110")]
-        [DisableRequestSizeLimit]
-        public async Task<IActionResult> ImageToText(List<IFormFile> uploadedFile, Guid conversationId,
-    string txtpromptimgtotext)
+    [Experimental("SKEXP0110")]
+    [DisableRequestSizeLimit]
+    public async Task<IActionResult> ImageToText(List<IFormFile> uploadedFile, Guid conversationId,
+        string txtpromptimgtotext)
+    {
+        ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
+
+        if (string.IsNullOrEmpty(txtpromptimgtotext))
+            txtpromptimgtotext = "";
+
+        if (uploadedFile == null || uploadedFile.Count == 0)
         {
-            ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
-
-            if (string.IsNullOrEmpty(txtpromptimgtotext))
-                txtpromptimgtotext = "";
-
-            if (uploadedFile == null || uploadedFile.Count == 0)
+            ChatMessageContentItemCollection col = new ChatMessageContentItemCollection
             {
-
-
-
-                var col = new ChatMessageContentItemCollection
-                {
-                    new TextContent(txtpromptimgtotext)
-                };
-                var p = new Dictionary<string, object>
-                {
-                    { "Conversation Id", conversationId.ToString() },
-                    { "Owner Id", GetOwnerId().ToString() }
-                };
-                _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
-            }
-            else
+                new TextContent(txtpromptimgtotext)
+            };
+            Dictionary<string, object> p = new Dictionary<string, object>
             {
-                foreach (IFormFile postedFile in uploadedFile)
+                { "Conversation Id", conversationId.ToString() },
+                { "Owner Id", GetOwnerId().ToString() }
+            };
+            _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
+        }
+        else
+        {
+            foreach (IFormFile postedFile in uploadedFile)
+            {
+                using Stream fs = postedFile.OpenReadStream();
+                byte[] byteArray = new byte[fs.Length];
+                fs.Read(byteArray, 0, (int)fs.Length);
+
+                string mimeType = postedFile.FileName.GetMimeTypeForFileExtension();
+
+                string ext = Path.GetExtension(postedFile.FileName).ToLowerInvariant();
+                ChatMessageContentItemCollection col;
+                switch (ext)
                 {
-                    using Stream fs = postedFile.OpenReadStream();
-                    byte[] byteArray = new byte[fs.Length];
-                    fs.Read(byteArray, 0, (int)fs.Length);
-
-                    string mimeType = postedFile.FileName.GetMimeTypeForFileExtension();
-
-                    string ext = Path.GetExtension(postedFile.FileName).ToLowerInvariant();
-                    ChatMessageContentItemCollection col;
-                    switch (ext)
-                    {
-                        case ".jpg":
-                        case ".jpeg":
-                        case ".png":
-                        case ".gif":
-                        case ".bmp":
-                        case ".webp":
-                            col = new ChatMessageContentItemCollection
+                    case ".jpg":
+                    case ".jpeg":
+                    case ".png":
+                    case ".gif":
+                    case ".bmp":
+                    case ".webp":
+                        col = new ChatMessageContentItemCollection
                         {
                             new TextContent(txtpromptimgtotext, Config.Instance.Model),
                             new ImageContent(new ReadOnlyMemory<byte>(byteArray), mimeType)
                         };
-                            break;
-                        case ".pdf":
-                            string key = "";
-                            using (Stream stream = new MemoryStream(byteArray))
-                            {
-                                key = await _semanticKernelService.ImportFile(postedFile.FileName, stream,
-                                    conversationId, GetOwnerId());
-                            }
+                        break;
+                    case ".pdf":
+                        string key = "";
+                        using (Stream stream = new MemoryStream(byteArray))
+                        {
+                            key = await _semanticKernelService.ImportFile(postedFile.FileName, stream,
+                                conversationId, GetOwnerId());
+                        }
 
-                            col = new ChatMessageContentItemCollection
+                        col = new ChatMessageContentItemCollection
                         {
                             new TextContent(txtpromptimgtotext, Config.Instance.Model),
                             new FileReferenceContent(key)
                         };
-                            break;
-                        default:
-                            return new ContentResult
-                            {
-                                Content = BuildOutput(_hist),
-                                ContentType = "text/html"
-                            };
-                            break;
-                    }
-                    var p = new Dictionary<string, object>
-                    {
-                        { "Conversation Id", conversationId.ToString() },
-                        { "Owner Id", GetOwnerId().ToString() }
-                    };
-
-                    _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
+                        break;
+                    default:
+                        return new ContentResult
+                        {
+                            Content = BuildOutput(_hist),
+                            ContentType = "text/html"
+                        };
+                        break;
                 }
-            }
 
-
-
-            var settings = new PromptExecutionSettings
-            {
-
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true),
-                ExtensionData = new Dictionary<string, object>()
+                Dictionary<string, object> p = new Dictionary<string, object>
                 {
-                    ["Conversation Id"] = conversationId.ToString(),
-                    ["Owner Id"] = GetOwnerId().ToString(),
-                },
-                ModelId = Config.Instance.Model
-            };
+                    { "Conversation Id", conversationId.ToString() },
+                    { "Owner Id", GetOwnerId().ToString() }
+                };
 
-            StaticHelpers.SaveChatHistory(conversationId, _hist);
+                _hist.AddMessage(AuthorRole.User, col, Encoding.ASCII, p);
+            }
+        }
 
 
-            //Get the streaming chat message contents
+        PromptExecutionSettings settings = new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true),
+            ExtensionData = new Dictionary<string, object>
+            {
+                ["Conversation Id"] = conversationId.ToString(),
+                ["Owner Id"] = GetOwnerId().ToString()
+            },
+            ModelId = Config.Instance.Model
+        };
 
-            
+        StaticHelpers.SaveChatHistory(conversationId, _hist);
 
-            IReadOnlyList<ChatMessageContent> result = await _semanticKernelService.GetChatService().GetChatMessageContentsAsync(
+
+        //Get the streaming chat message contents
+
+
+        IReadOnlyList<ChatMessageContent> result = await _semanticKernelService.GetChatService()
+            .GetChatMessageContentsAsync(
                 _hist,
                 kernel: _semanticKernelService.GetKernel(),
                 executionSettings: settings
             );
 
-            _hist = StaticHelpers.GetChatHistory(conversationId);
-            StringBuilder output = new StringBuilder();
-            foreach (ChatMessageContent content in result) output.AppendLine(content.Content);
+        _hist = StaticHelpers.GetChatHistory(conversationId);
+        StringBuilder output = new StringBuilder();
+        foreach (ChatMessageContent content in result) output.AppendLine(content.Content);
 
-            string op = output.ToString();
-            _hist.AddAssistantMessage(op);
+        string op = output.ToString();
+        _hist.AddAssistantMessage(op);
 
-            StaticHelpers.SaveChatHistory(conversationId, _hist);
+        StaticHelpers.SaveChatHistory(conversationId, _hist);
 
 
-            return new ContentResult
-            {
-                Content = BuildOutput(_hist),
-                ContentType = "text/html"
-            };
-        }
+        return new ContentResult
+        {
+            Content = BuildOutput(_hist),
+            ContentType = "text/html"
+        };
     }
 }

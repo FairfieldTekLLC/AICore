@@ -24,7 +24,7 @@ public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISeman
 
     public async Task<string> AskAsync(string query, Guid conversationId, Guid activeDirectoryId)
     {
-        var answer = await memory.AskAsync(
+        MemoryAnswer answer = await memory.AskAsync(
             query,
             filter: MemoryFilters.ByTag("conversationId", conversationId.ToString()),
             index: activeDirectoryId.ToString());
@@ -57,24 +57,18 @@ public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISeman
             collection.Add("conversationId", conversationId.ToString());
 
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(300)); // 30-second timeout
+            using CancellationTokenSource
+                cts = new CancellationTokenSource(TimeSpan.FromSeconds(300)); // 30-second timeout
             try
             {
                 return await memory.ImportWebPageAsync(url,
-                      documentId: Guid.NewGuid().ToString(),
-                      cancellationToken: cts.Token);
+                    Guid.NewGuid().ToString(),
+                    cancellationToken: cts.Token);
             }
             catch (TaskCanceledException)
             {
                 Console.WriteLine("Import operation timed out!"); //
             }
-
-
-
-
-
-
-
 
 
             //return await memory.ImportWebPageAsync(url, null, collection, activeDirectoryId.ToString(),

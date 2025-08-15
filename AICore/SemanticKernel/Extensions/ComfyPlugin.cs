@@ -11,12 +11,10 @@ public class ComfyPlugin
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
 
-    public ComfyPlugin( IServiceScopeFactory scopeFactory)
+    public ComfyPlugin(IServiceScopeFactory scopeFactory)
     {
-        
         _serviceScopeFactory = scopeFactory;
     }
-
 
 
     private string GeneratePrompt(string text, string fileName)
@@ -115,19 +113,19 @@ public class ComfyPlugin
     {
         try
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(Config.Instance.ComfyUrl);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(Config.Instance.ComfyUrl);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            using (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
                 streamWriter.Write("{\"prompt\": " + prompt + "}");
             }
 
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
             {
-                var result = streamReader.ReadToEnd();
+                string result = streamReader.ReadToEnd();
                 Console.WriteLine(result);
             }
         }
@@ -145,7 +143,6 @@ public class ComfyPlugin
         [Description("Owner Id")] Guid ownerId,
         [Description("of")] string imageDescription)
     {
-        
         Guid g = Guid.NewGuid();
 
         string prompt = GeneratePrompt(imageDescription, g.ToString());
@@ -153,11 +150,6 @@ public class ComfyPlugin
         QueuePrompt(prompt);
 
         ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
-
-
-
-
-
 
 
         string fileName = Config.Instance.ComfyOutPutFolder + g + "_00001_.png";
@@ -169,9 +161,7 @@ public class ComfyPlugin
             Thread.Sleep(1000);
             counter++;
             if (counter > 60) // wait for 60 seconds max
-            {
                 return "timeout";
-            }
         }
 
         byte[] data = null;
@@ -183,20 +173,17 @@ public class ComfyPlugin
 
                 try
                 {
-                     data = File.ReadAllBytes(fileName);
+                    data = File.ReadAllBytes(fileName);
                     File.Delete(fileName);
                     break;
                 }
                 catch (Exception e)
                 {
                     Thread.Sleep(1000);
+                }
 
-                }
                 if (counter > 60) // wait for 60 seconds max
-                {
-                    
                     return "timeout";
-                }
             }
 
         if (data == null)
@@ -204,14 +191,13 @@ public class ComfyPlugin
 
 
         string mimeType = fileName.GetMimeTypeForFileExtension();
-        var col = new ChatMessageContentItemCollection
+        ChatMessageContentItemCollection col = new ChatMessageContentItemCollection
         {
             new TextContent(imageDescription, Config.Instance.Model),
             new ImageContent(new ReadOnlyMemory<byte>(data), mimeType)
         };
         _hist.AddMessage(AuthorRole.Assistant, col);
-        StaticHelpers.SaveChatHistory(conversationId,_hist);
-
+        StaticHelpers.SaveChatHistory(conversationId, _hist);
 
 
         //return "<img style='width:100px;height:100px' src='data:" + mimeType +
@@ -221,4 +207,3 @@ public class ComfyPlugin
         return "ok";
     }
 }
-

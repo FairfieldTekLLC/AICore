@@ -1,6 +1,6 @@
 ﻿namespace AICore.Models;
 
-public class Conversation
+public partial class Conversation
 {
     public Guid Pkconversationid { get; set; }
 
@@ -14,9 +14,7 @@ public class Conversation
 
     public string Description { get; set; } = null!;
 
-    public string? SerializedChat { get; set; }
-
-    public virtual ICollection<Entry> Entries { get; set; } = new List<Entry>();
+    public string Serializedchat { get; set; } = null!;
 
     public virtual Securityobject FksecurityobjectownerNavigation { get; set; } = null!;
 }

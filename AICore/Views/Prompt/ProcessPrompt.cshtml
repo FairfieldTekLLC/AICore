@@ -23,12 +23,12 @@
     </div>
     <div id="txt-output">
         @{
-            if (@Model.ConversationText != null)
+            if (Model.ConversationText != null)
             {
-                WriteLiteral(@Model.ConversationText.ToString());
+                WriteLiteral(Model.ConversationText);
             }
         }
-        
+
     </div>
     <div>
         <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>

@@ -1,51 +1,46 @@
-﻿using AICore.Classes;
-using AICore.Models;
+﻿using System.Diagnostics;
 using AICore.SemanticKernel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.SemanticKernel.ChatCompletion;
-using System.Diagnostics;
 
-namespace AICore.Controllers
+namespace AICore.Controllers;
+
+public class BaseController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService)
+    : Controller
 {
-    public class BaseController : Controller
+    public readonly ILogger<HomeController> _logger = logger;
+    public readonly ISemanticKernelService _semanticKernelService = semanticKernelService;
+
+    public Guid GetOwnerId()
     {
-        public BaseController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService)
+        string? key = HttpContext.Session.GetString("UserKey");
+        if(key == null)
+            return Guid.Empty;
+        try
         {
-            _logger = logger;
-            _semanticKernelService = semanticKernelService;
+            return new Guid(key);
         }
-        public readonly ILogger<HomeController> _logger;
-        public readonly ISemanticKernelService _semanticKernelService;
-        public Guid GetOwnerId()
+        catch (Exception e)
         {
-            string key = HttpContext.Session.GetString("UserKey");
-            try
-            {
-
-                return new Guid(key);
-            }
-            catch (Exception e)
-            {
-                return Guid.Empty;
-            }
+            return Guid.Empty;
         }
+    }
 
 
-        public override void OnActionExecuted(ActionExecutedContext context)
+    public override void OnActionExecuted(ActionExecutedContext context)
+    {
+        if (context.ActionDescriptor.DisplayName.Equals("AICore.Controllers.LoginController.LoginOrCreate (AICore)"))
+            return;
+
+        Debug.WriteLine(context.Controller.ToString());
+        string? key = HttpContext.Session.GetString("UserKey");
+        try
         {
-            if (context.ActionDescriptor.DisplayName.Equals("AICore.Controllers.LoginController.LoginOrCreate (AICore)"))
-                return;
-            Debug.WriteLine(context.Controller.ToString());
-            string key = HttpContext.Session.GetString("UserKey");
-            try
-            {
-                var t = new Guid(key);
-            }
-            catch (Exception e)
-            {
-                Response.Redirect("/Login/LoginOrCreate");
-            }
+            Guid t = new Guid(key);
+        }
+        catch (Exception e)
+        {
+            Response.Redirect("/Login/LoginOrCreate");
         }
     }
 }

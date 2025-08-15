@@ -1,5 +1,4 @@
-﻿using AICore.Domain.Data_Classes;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using iTextSharp.text.pdf;
 using Newtonsoft.Json;
 using PuppeteerSharp;
@@ -52,7 +51,7 @@ public static class InternetSearchHelper
             byte[]? doc = await page.PdfDataAsync();
             return doc;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return new List<byte>().ToArray();
         }
@@ -60,14 +59,14 @@ public static class InternetSearchHelper
 
     public static string ReadPDf(byte[] pdfbytes)
     {
-        var reader = new PdfReader(pdfbytes);
+        PdfReader reader = new PdfReader(pdfbytes);
 
-        var stringsList = new List<string>();
-        for (var pageNum = 1; pageNum <= reader.NumberOfPages; pageNum++)
+        List<string> stringsList = new List<string>();
+        for (int pageNum = 1; pageNum <= reader.NumberOfPages; pageNum++)
         {
             // Get the page content and tokenize it.
-            var contentBytes = reader.GetPageContent(pageNum);
-            var tokenizer = new PrTokeniser(new RandomAccessFileOrArray(contentBytes));
+            byte[]? contentBytes = reader.GetPageContent(pageNum);
+            PrTokeniser tokenizer = new PrTokeniser(new RandomAccessFileOrArray(contentBytes));
 
 
             while (tokenizer.NextToken())
@@ -102,7 +101,7 @@ public static class InternetSearchHelper
                 byte[]? doc = await page.PdfDataAsync();
                 return StripShit(ReadPDf(doc));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return "";
             }

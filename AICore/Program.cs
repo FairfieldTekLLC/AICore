@@ -10,7 +10,7 @@ public class Program
     public static void Main(string[] args)
     {
         Config.Instance.Load();
-        var builder = WebApplication.CreateBuilder(args);
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
         builder.Services.AddControllersWithViews();
@@ -47,7 +47,7 @@ public class Program
         });
 
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
         app.ConfigureDatabaseServices();
 
         // Configure the HTTP request pipeline.
