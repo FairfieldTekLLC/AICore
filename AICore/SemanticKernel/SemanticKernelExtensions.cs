@@ -79,7 +79,7 @@ public static class SemanticKernelExtensions
         builder.Services.AddTransient<ISemanticKernelService, SemanticKernelService>();
 
 
-        InternetSearchPlugin internetSearchPlugin = new InternetSearchPlugin(
+        SearXNGSearchPlugin internetSearchPlugin = new SearXNGSearchPlugin(
             builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
             builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
 

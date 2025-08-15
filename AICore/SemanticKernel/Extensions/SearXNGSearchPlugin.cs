@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace AICore.SemanticKernel.Extensions;
 // So this plugin uses the SearXng search engine to search the internet for a subject.
 // We need to inject the chat history and owner id into the search results.
-public class InternetSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
+public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
 {
     [KernelFunction("search_internet")]
     [Description("Search the internet for a subject.")]
