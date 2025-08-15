@@ -33,40 +33,25 @@
 </table>
 <script>
     function Login(){
-
-
+        // Get the values from the input fields
+        // Assuming you have jQuery included in your project
         var email1 = $("#txtemail").val();
         var pass = $("#txtpass").val();
+        var formData = new FormData();
+        formData.append('email',email1);
+        formData.append('password',pass);
 
-           // if ($('#fileInput').val() === '') {
-           //     alert('Please select a file to upload.');
-           //     return;
-           // }
-
-
-           var formData = new FormData();
-           //var prompt = document.getElementById("txt-prompt").value;
-
-           //var file = $('#fileInput')[0].files[0]; // Get the selected file
-           //formData.append('uploadedFile', file); // 'uploadedFile' is the key for the server-side
-           formData.append('email',email1);
-           formData.append('password',pass);
-
-           $.ajax({
+        $.ajax({
                url: '@Url.Action("LoginOrCreateFunction", "Login")', // Your C# endpoint URL
                type: 'POST',
                data: formData,
                contentType: false, // Important: Don't set content type
                processData: false, // Important: Don't process data
                success: function(response) {
-                   // $('#status').html('<span class="text-success">File uploaded successfully! </span>');
-                   // $('#fileInput').val(''); // Clear the file input
-                   // console.log(response);
-                   // $('#txt-output').empty().append(response);
                   console.log(response);
                    if (response.Authorized==true)
                    {
-                       alert("Good");
+
                        window.location.replace('@Url.Action("ConversationList", "Conversation")');
                    }
 

@@ -170,6 +170,23 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
                             new FileReferenceContent(key)
                         };
                         break;
+                    case ".txt":
+                        string text = Encoding.UTF8.GetString(byteArray);
+                        using (Stream stream = new MemoryStream(byteArray))
+                        {
+                            key = await _semanticKernelService.ImportText(text, conversationId, GetOwnerId());
+                        }
+
+                        col = new ChatMessageContentItemCollection
+                        {
+                            new TextContent(txtpromptimgtotext, Config.Instance.Model),
+                            new FileReferenceContent(key)
+                        };
+
+
+
+
+                        break;
                     default:
                         return new ContentResult
                         {

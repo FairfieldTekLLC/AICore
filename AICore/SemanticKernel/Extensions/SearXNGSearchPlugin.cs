@@ -6,19 +6,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AICore.SemanticKernel.Extensions;
-
-public class InternetSearchPlugin
+// So this plugin uses the SearXng search engine to search the internet for a subject.
+// We need to inject the chat history and owner id into the search results.
+public class InternetSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
 {
-    private readonly ISemanticKernelService _kernal;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public InternetSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
-    {
-        _serviceScopeFactory = scopeFactory;
-        _kernal = kernal;
-    }
-
-
     [KernelFunction("search_internet")]
     [Description("Search the internet for a subject.")]
     public async Task<string> SearchTheInternet(
@@ -38,7 +29,7 @@ public class InternetSearchPlugin
         }
     }
 
-
+    //Check if the URL contains any of the ignored sites
     private bool LoadSite(string url)
     {
         return Config.Instance.IgnoreSites.All(site =>
@@ -48,7 +39,7 @@ public class InternetSearchPlugin
 
     public async Task<string> ImportWebSearch(Guid conversationId, Guid ownerId, string passedSearchString)
     {
-        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        using IServiceScope scope = scopeFactory.CreateScope();
 
 
         StringBuilder resultText = new StringBuilder();
@@ -68,16 +59,15 @@ public class InternetSearchPlugin
         if (searchString.Contains(" today's", StringComparison.InvariantCultureIgnoreCase))
             searchString = searchString.Replace(" today's", DateTime.Now.ToString("D"));
 
-
-        List<Result> SearchResults =
-            new List<string> { searchString }.QuerySearchEngineForUrls(30);
+        //Search SearXng with the search string
+        List<Result> SearchResults = new List<string> { searchString }.QuerySearchEngineForUrls(30);
 
         List<string> urls = new List<string>();
-
-
+        
         int counter = 0;
         foreach (Result result in SearchResults)
         {
+            // Check if the result URL is valid and not ignored    
             if (LoadSite(result.Url))
             {
                 urls.Add(result.Url);
@@ -88,17 +78,20 @@ public class InternetSearchPlugin
                 counter++;
             }
 
-            if (counter > 5)
+            // Limit the number of results processed
+            if (counter > Config.Instance.NumberOfResultsForInternetSearch)
                 break;
         }
 
         ChatMessageContentItemCollection col = new ChatMessageContentItemCollection();
+
+        // Add the search results to the chat history
         Parallel.ForEach(urls, new ParallelOptions { MaxDegreeOfParallelism = 8 }, url =>
         {
             try
             {
                 Debug.WriteLine("Started Loading URL: " + url);
-                string key = _kernal.ImportWebPage(url, conversationId, ownerId).Result;
+                string key = kernal.ImportWebPage(url, conversationId, ownerId).Result;
                 Debug.WriteLine("Finished Loading URL: " + url);
                 if (!string.IsNullOrEmpty(key))
 #pragma warning disable SKEXP0110

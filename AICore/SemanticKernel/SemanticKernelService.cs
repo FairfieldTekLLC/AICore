@@ -8,12 +8,6 @@ namespace AICore.SemanticKernel;
 
 public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISemanticKernelService
 {
-    public enum EndpointType
-    {
-        Chat,
-        Generate
-    }
-
     public async Task<string> ImportText(string text, Guid conversationId, Guid activeDirectoryId)
     {
         TagCollection collection = new TagCollection();
@@ -69,10 +63,6 @@ public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISeman
             {
                 Console.WriteLine("Import operation timed out!"); //
             }
-
-
-            //return await memory.ImportWebPageAsync(url, null, collection, activeDirectoryId.ToString(),
-            //    Constants.PipelineOnlySummary, context);
         }
         catch (Exception)
         {

@@ -13,6 +13,6 @@
   "LogFilePath": "C:\\Logs\\SematicKernelWeb\\",
   "CurrentLogLevel": 2,
   "ComfyUrl": "http://localhost:8188/prompt",
-  "VisionModel": "llava:13b"
-
+  "VisionModel": "llava:13b",
+  "NumberOfResultsForInternetSearch": 5
 }

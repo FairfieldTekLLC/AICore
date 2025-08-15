@@ -18,8 +18,18 @@
     <div class="container">
         <h1 class="display-4">Welcome to the AI Prompt Generator</h1>
         <p class="lead">This tool helps you create effective prompts for AI models.</p>
-        <p>Enter your prompt below and click "Generate" to see the result.</p>
+        <p>Enter your prompt below and click "Ask" to see the result.</p>
 
+    </div>
+    <div>
+        <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>
+        
+    </div>
+    <div id="ImageToTextUpload">
+        <span>Attach a file!</span>
+        <input type="file" id="fileInput" value="Choose Image File"accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.ico,.svg,.pdf,.txt"/>
+        <button id="uploadButton" onclick="uploadFile()">Ask</button>
+        <div id="status"></div>
     </div>
     <div id="txt-output">
         @{
@@ -30,26 +40,17 @@
         }
 
     </div>
-    <div>
-        <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>
-    </div>
+
 
 
 </div>
 *
-<div id="ImageToTextUpload">
-    <span>Attach a file!</span>
-    <input type="file" id="fileInput" value="Choose Image File"accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.ico,.svg,.pdf"/>
-    <button id="uploadButton" onclick="uploadFile()">Ask</button>
-    <div id="status"></div>
 
-</div>
 
 <script>
 
         function uploadFile(){
             var conversationId = $("#ConversationId").html();
-            //alert(conversationId);
             var formData = new FormData();
             var prompt = document.getElementById("txt-prompt").value;
             var file = $('#fileInput')[0].files[0]; // Get the selected file

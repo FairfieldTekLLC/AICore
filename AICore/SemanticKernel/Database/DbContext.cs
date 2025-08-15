@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using AICore.Classes;
-using AICore.Models;
 using Dapper;
 using Npgsql;
 

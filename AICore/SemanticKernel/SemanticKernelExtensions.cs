@@ -90,7 +90,6 @@ public static class SemanticKernelExtensions
 
 
         ComfyPlugin comfyPlugin = new ComfyPlugin(
-            //builder.Services.BuildServiceProvider().GetRequiredService<IBackendWorker>(),
             builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>());
 
 

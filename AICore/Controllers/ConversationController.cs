@@ -4,7 +4,6 @@ using AICore.Controllers.ViewModels;
 using AICore.Models;
 using AICore.SemanticKernel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -76,7 +75,6 @@ public class ConversationController(ILogger<HomeController> logger, ISemanticKer
                 success = true
             });
         }
-
     }
 
     public IActionResult CreateConversationView()
@@ -92,7 +90,11 @@ public class ConversationController(ILogger<HomeController> logger, ISemanticKer
         {
             List<Conversation> convs = ctx.Conversations.Where(x => x.Fksecurityobjectowner == GetOwnerId())
                 .ToList();
-            conversations.AddRange(convs.Select(conversation => new ConversationVm { ParentId = conversation.Fkparentid, Title = conversation.Title, Description = conversation.Description, Id = conversation.Pkconversationid }));
+            conversations.AddRange(convs.Select(conversation => new ConversationVm
+            {
+                ParentId = conversation.Fkparentid, Title = conversation.Title, Description = conversation.Description,
+                Id = conversation.Pkconversationid
+            }));
         }
 
         return View(conversations);

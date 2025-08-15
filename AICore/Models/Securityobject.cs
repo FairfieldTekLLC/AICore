@@ -1,6 +1,6 @@
 ﻿namespace AICore.Models;
 
-public partial class Securityobject
+public class Securityobject
 {
     public Guid Activedirectoryid { get; set; }
 

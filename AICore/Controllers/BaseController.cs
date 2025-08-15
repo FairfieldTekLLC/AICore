@@ -14,7 +14,7 @@ public class BaseController(ILogger<HomeController> logger, ISemanticKernelServi
     public Guid GetOwnerId()
     {
         string? key = HttpContext.Session.GetString("UserKey");
-        if(key == null)
+        if (key == null)
             return Guid.Empty;
         try
         {

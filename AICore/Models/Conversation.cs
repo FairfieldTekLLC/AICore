@@ -1,6 +1,6 @@
 ﻿namespace AICore.Models;
 
-public partial class Conversation
+public class Conversation
 {
     public Guid Pkconversationid { get; set; }
 

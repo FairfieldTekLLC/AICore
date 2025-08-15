@@ -13,6 +13,8 @@ public class Config
     public static Config Instance => Lazy.Value;
 
     public string ComfyUrl { get; set; }
+
+    public int NumberOfResultsForInternetSearch { get; set; }
     public string ComfyOutPutFolder { get; set; }
 
     public string EmbeddingModel { get; set; }
@@ -59,6 +61,7 @@ public class Config
             CurrentLogLevel = config.CurrentLogLevel;
             ComfyUrl = config.ComfyUrl;
             VisionModel = config.VisionModel;
+            NumberOfResultsForInternetSearch = config.NumberOfResultsForInternetSearch;
         }
     }
 }

@@ -6,17 +6,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AICore.SemanticKernel.Extensions;
 
-public class ComfyPlugin
+public class ComfyPlugin(IServiceScopeFactory scopeFactory)
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-
-    public ComfyPlugin(IServiceScopeFactory scopeFactory)
-    {
-        _serviceScopeFactory = scopeFactory;
-    }
-
-
+    private readonly IServiceScopeFactory _serviceScopeFactory = scopeFactory;
+    
     private string GeneratePrompt(string text, string fileName)
     {
         return @"
@@ -143,18 +136,18 @@ public class ComfyPlugin
         [Description("Owner Id")] Guid ownerId,
         [Description("of")] string imageDescription)
     {
+        //Generate a unique identifier for the image
         Guid g = Guid.NewGuid();
-
+        //Create the prompt for ComfyUI
         string prompt = GeneratePrompt(imageDescription, g.ToString());
-
+        //Queue the prompt to ComfyUI
         QueuePrompt(prompt);
-
+        //Load the chat history
         ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
-
-
+        //Determine the output filename
         string fileName = Config.Instance.ComfyOutPutFolder + g + "_00001_.png";
 
-
+        //Wait for the file to be created
         int counter = 0;
         while (!File.Exists(fileName))
         {
@@ -164,6 +157,7 @@ public class ComfyPlugin
                 return "timeout";
         }
 
+        //Read the file and delete it
         byte[] data = null;
         counter = 0;
         if (File.Exists(fileName))
@@ -189,7 +183,7 @@ public class ComfyPlugin
         if (data == null)
             return "oops";
 
-
+        /// Add the image to the chat history
         string mimeType = fileName.GetMimeTypeForFileExtension();
         ChatMessageContentItemCollection col = new ChatMessageContentItemCollection
         {
@@ -198,12 +192,7 @@ public class ComfyPlugin
         };
         _hist.AddMessage(AuthorRole.Assistant, col);
         StaticHelpers.SaveChatHistory(conversationId, _hist);
-
-
-        //return "<img style='width:100px;height:100px' src='data:" + mimeType +
-        //    ";base64," +
-        //    Convert.ToBase64String(data) + "' />";
-
+        
         return "ok";
     }
 }
