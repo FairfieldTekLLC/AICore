@@ -1,20 +1,22 @@
-﻿using System.ComponentModel;
-using System.Text;
-using AICore.Classes;
+﻿using AICore.Classes;
+using AICore.Service;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.ComponentModel;
+using System.Text;
 
 namespace AICore.SemanticKernel.Extensions;
 
 public class InternetUrlLoadPlugin
 {
     private readonly ISemanticKernelService _kernal;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IBackend _backend;
 
-    public InternetUrlLoadPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
+    public InternetUrlLoadPlugin(ISemanticKernelService kernal, IBackend backend)
     {
         _kernal = kernal;
-        _serviceScopeFactory = scopeFactory;
+        _backend = backend;
+        
     }
 
 
@@ -25,14 +27,17 @@ public class InternetUrlLoadPlugin
         [Description("Owner Id")] Guid ownerId,
         [Description("url")] string url)
     {
+        _backend.SendMessage(conversationId,"Attempting to load the url '" + url + "'");
         ChatMessageContentItemCollection col = new ChatMessageContentItemCollection();
         string key = "";
         try
         {
             key = _kernal.ImportWebPage(url, conversationId, ownerId).Result;
+            _backend.SendMessage(conversationId, "Loaded the url '" + url + "'");
         }
         catch (Exception e)
         {
+            _backend.SendMessage(conversationId, "Failed to loaded the url '" + url + "'");
         }
 
 

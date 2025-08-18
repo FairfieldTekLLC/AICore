@@ -1,6 +1,8 @@
 using AICore.Classes;
+using AICore.Hubs;
 using AICore.SemanticKernel;
 using AICore.SemanticKernel.Database;
+using AICore.Service;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace AICore;
@@ -15,7 +17,8 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews();
         builder.AddDatabaseServices();
-        builder.AddSemanticKernel();
+        builder.Services.AddSignalR();
+        builder.Services.AddSingleton<IBackend, Backend>();
 
         builder.Services.AddMvc().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         builder.Services
@@ -45,6 +48,10 @@ public class Program
             options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
             options.MultipartHeadersLengthLimit = int.MaxValue;
         });
+        
+        builder.AddSemanticKernel();
+
+        
 
 
         WebApplication app = builder.Build();
@@ -68,7 +75,8 @@ public class Program
                 "default",
                 "{controller=Login}/{action=LoginOrCreate}/{id?}")
             .WithStaticAssets();
-
+        app.MapHub<ChatHub>("/chatHub");
+        
         app.Run();
     }
 }

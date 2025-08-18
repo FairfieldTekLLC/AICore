@@ -1,15 +1,21 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
-using AICore.Classes;
+﻿using AICore.Classes;
+using AICore.Hubs;
+using AICore.Service;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Text;
 
 namespace AICore.SemanticKernel.Extensions;
 // So this plugin uses the SearXng search engine to search the internet for a subject.
 // We need to inject the chat history and owner id into the search results.
-public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKernelService kernal)
+public class SearXNGSearchPlugin(ISemanticKernelService kernal, IBackend backend)
 {
+
+
     [KernelFunction("search_internet")]
     [Description("Search the internet for a subject.")]
     public async Task<string> SearchTheInternet(
@@ -19,6 +25,8 @@ public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKer
     {
         try
         {
+            //await hubContext.SendMessage(conversationId, "Ok, gonna search the internet for you!");
+
             string content = await ImportWebSearch(conversationId, ownerId, searchString);
             return content;
         }
@@ -39,7 +47,7 @@ public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKer
 
     public async Task<string> ImportWebSearch(Guid conversationId, Guid ownerId, string passedSearchString)
     {
-        using IServiceScope scope = scopeFactory.CreateScope();
+
 
 
         StringBuilder resultText = new StringBuilder();
@@ -63,13 +71,14 @@ public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKer
         List<Result> SearchResults = new List<string> { searchString }.QuerySearchEngineForUrls(30);
 
         List<string> urls = new List<string>();
-        
+
         int counter = 0;
         foreach (Result result in SearchResults)
         {
             // Check if the result URL is valid and not ignored    
             if (LoadSite(result.Url))
             {
+                backend.SendMessage(conversationId, "Found website: " + result.Url);
                 urls.Add(result.Url);
                 resultText.AppendLine("Title: " + result.Title);
                 resultText.AppendLine("Url: <a href='" + result.Url + "' target='newWindow'>" + result.Url + "</a>");
@@ -90,9 +99,11 @@ public class SearXNGSearchPlugin(IServiceScopeFactory scopeFactory, ISemanticKer
         {
             try
             {
+                backend.SendMessage(conversationId, "Started Loading URL: " + url);
                 Debug.WriteLine("Started Loading URL: " + url);
                 string key = kernal.ImportWebPage(url, conversationId, ownerId).Result;
                 Debug.WriteLine("Finished Loading URL: " + url);
+                backend.SendMessage(conversationId, "Finished Loading URL: " + url);
                 if (!string.IsNullOrEmpty(key))
 #pragma warning disable SKEXP0110
                     col.Add(new FileReferenceContent(key));

@@ -1,15 +1,19 @@
-﻿using System.ComponentModel;
-using System.Net;
-using AICore.Classes;
+﻿using AICore.Classes;
+using AICore.Service;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.ComponentModel;
+using System.Net;
 
 namespace AICore.SemanticKernel.Extensions;
 
-public class ComfyPlugin(IServiceScopeFactory scopeFactory)
+public class ComfyPlugin(ISemanticKernelService kernal, IBackend backend)
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory = scopeFactory;
+    private readonly ISemanticKernelService _kernal = kernal;
+    private readonly IBackend _backend = backend;
+
     
+
     private string GeneratePrompt(string text, string fileName)
     {
         return @"
@@ -128,16 +132,13 @@ public class ComfyPlugin(IServiceScopeFactory scopeFactory)
         }
     }
 
-
-    [KernelFunction("draw-picture")]
-    [Description("draw me a picture of")]
-    public async Task<string> Work(
-        [Description("The conversation Id")] Guid conversationId,
-        [Description("Owner Id")] Guid ownerId,
-        [Description("of")] string imageDescription)
+    public async Task<string> DrawPicture(Guid conversationId, Guid ownerId, string imageDescription)
     {
+        _backend.SendMessage(conversationId, "So you want me to draw you a picture of '" + imageDescription + "'?");
         //Generate a unique identifier for the image
         Guid g = Guid.NewGuid();
+
+        _backend.SendMessage(conversationId, "Generating prompt");
         //Create the prompt for ComfyUI
         string prompt = GeneratePrompt(imageDescription, g.ToString());
         //Queue the prompt to ComfyUI
@@ -149,6 +150,7 @@ public class ComfyPlugin(IServiceScopeFactory scopeFactory)
 
         //Wait for the file to be created
         int counter = 0;
+        _backend.SendMessage(conversationId, "Waiting for generation.");
         while (!File.Exists(fileName))
         {
             Thread.Sleep(1000);
@@ -156,7 +158,7 @@ public class ComfyPlugin(IServiceScopeFactory scopeFactory)
             if (counter > 60) // wait for 60 seconds max
                 return "timeout";
         }
-
+        _backend.SendMessage(conversationId, "Generation Complete.  Processing file.");
         //Read the file and delete it
         byte[] data = null;
         counter = 0;
@@ -183,6 +185,7 @@ public class ComfyPlugin(IServiceScopeFactory scopeFactory)
         if (data == null)
             return "oops";
 
+        _backend.SendMessage(conversationId, "Add image to chat.");
         /// Add the image to the chat history
         string mimeType = fileName.GetMimeTypeForFileExtension();
         ChatMessageContentItemCollection col = new ChatMessageContentItemCollection
@@ -192,7 +195,28 @@ public class ComfyPlugin(IServiceScopeFactory scopeFactory)
         };
         _hist.AddMessage(AuthorRole.Assistant, col);
         StaticHelpers.SaveChatHistory(conversationId, _hist);
-        
+
         return "ok";
+    }
+
+
+    [KernelFunction("draw-picture_1")]
+    [Description("Draw me a picture of something")]
+    public async Task<string> Draw(
+        [Description("The conversation Id")] Guid conversationId,
+        [Description("Owner Id")] Guid ownerId,
+        [Description("of")] string imageDescription)
+    {
+        return await DrawPicture(conversationId, ownerId, imageDescription);
+    }
+
+    [KernelFunction("draw-picture_2")]
+    [Description("create a picture of")]
+    public async Task<string> CreatePicture(
+        [Description("The conversation Id")] Guid conversationId,
+        [Description("Owner Id")] Guid ownerId,
+        [Description("of")] string imageDescription)
+    {
+        return await DrawPicture(conversationId, ownerId, imageDescription);
     }
 }

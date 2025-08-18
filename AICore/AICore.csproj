@@ -8,13 +8,13 @@
 	<ItemGroup>
 		<PackageReference Include="Dapper" Version="2.1.66" />
 		<PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.7.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.8" />
 		<PackageReference Include="Microsoft.KernelMemory.AI.Ollama" Version="0.98.250508.3" />
 		<PackageReference Include="Microsoft.KernelMemory.Core" Version="0.98.250508.3" />
 		<PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.98.250508.3" />
 		<PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.98.250508.3" />
-		<PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
+		<PackageReference Include="Microsoft.SemanticKernel" Version="1.62.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.62.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.62.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.61.0-preview" />
@@ -22,15 +22,12 @@
 		<PackageReference Include="Microsoft.SemanticKernel.Plugins.Core" Version="1.61.0-preview" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-		<PackageReference Include="OllamaSharp" Version="5.3.3" />
+		<PackageReference Include="OllamaSharp" Version="5.3.4" />
 		<PackageReference Include="Pgvector.Dapper" Version="0.3.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
-		<PackageReference Include="System.DirectoryServices" Version="9.0.7" />
-		<PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.7" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
-		<PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="9.0.7" />
 		<PackageReference Include="PuppeteerSharp" Version="20.2.2" />
+		<PackageReference Include="System.Speech" Version="9.0.8" />
 
 
 

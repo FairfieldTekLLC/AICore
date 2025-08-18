@@ -1,5 +1,9 @@
 ﻿using AICore.Classes;
+using AICore.Hubs;
 using AICore.SemanticKernel.Extensions;
+using AICore.Service;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.SemanticKernel;
@@ -45,6 +49,9 @@ public static class SemanticKernelExtensions
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
+        kernelBuilder.Services.AddSingleton<SearXNGSearchPlugin>();
+        
+
 
         //Register the Ollama client
         kernelBuilder.AddOllamaChatCompletion(client);
@@ -63,7 +70,8 @@ public static class SemanticKernelExtensions
 
         kernelBuilder.Plugins.AddFromType<TimeInformationPlugin>();
         kernelBuilder.Plugins.AddFromType<TimePlugin>();
-
+        
+        
 
         Kernel kernel = kernelBuilder.Build();
 
@@ -76,25 +84,33 @@ public static class SemanticKernelExtensions
 
         builder.Services.AddSingleton(kernel);
         builder.Services.AddSingleton(memory);
-        builder.Services.AddTransient<ISemanticKernelService, SemanticKernelService>();
+        builder.Services.AddSingleton<ISemanticKernelService, SemanticKernelService>();
+        //builder.Services.AddTransient<ISemanticKernelService, SemanticKernelService>();
+
+        var scope = builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>();
+        var ikernel = builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>();
+        var backend = builder.Services.BuildServiceProvider().GetRequiredService<IBackend>();
+        
+        
+        
+        
 
 
-        SearXNGSearchPlugin internetSearchPlugin = new SearXNGSearchPlugin(
-            builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
-            builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
-
-
-        InternetUrlLoadPlugin internetUrlLoadPlugin = new InternetUrlLoadPlugin(
-            builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
-            builder.Services.BuildServiceProvider().GetRequiredService<ISemanticKernelService>());
-
-
-        ComfyPlugin comfyPlugin = new ComfyPlugin(
-            builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>());
-
+        SearXNGSearchPlugin internetSearchPlugin = new SearXNGSearchPlugin(ikernel,backend);
+        InternetUrlLoadPlugin internetUrlLoadPlugin = new InternetUrlLoadPlugin(ikernel, backend);
+        ComfyPlugin comfyPlugin = new ComfyPlugin(ikernel, backend);
 
         kernel.ImportPluginFromObject(internetSearchPlugin, "Internet_Search");
+        //kernel.ImportPluginFromType<SearXNGSearchPlugin>();
         kernel.ImportPluginFromObject(internetUrlLoadPlugin, "internetUrlLoadPlugin");
         kernel.ImportPluginFromObject(comfyPlugin, "ComfyPlugin");
+
+        //builder.Services.AddSingleton(internetSearchPlugin);
+        builder.Services.AddSingleton(internetUrlLoadPlugin);
+        builder.Services.AddSingleton(comfyPlugin);
+
+
+
+
     }
 }

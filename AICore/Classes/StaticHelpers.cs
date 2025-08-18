@@ -1,6 +1,10 @@
-﻿using AICore.Models;
+﻿using AICore.Controllers.ViewModels;
+using AICore.Hubs;
+using AICore.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OllamaSharp.Models.Chat;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AICore.Classes;
@@ -71,5 +75,12 @@ public static class StaticHelpers
             "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
             _ => input[0].ToString().ToUpper() + input.Substring(1)
         };
+    }
+
+    public static async Task SendMessage(this IHubContext<ChatHub> _hubContext,Guid conversationId,string message)
+    {
+        await _hubContext.Clients.Groups(conversationId.ToString()).SendCoreAsync("ReceiveMessage", new[] { conversationId.ToString(),message });
+
+
     }
 }

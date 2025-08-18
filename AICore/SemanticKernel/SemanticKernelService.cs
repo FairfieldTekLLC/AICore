@@ -1,13 +1,24 @@
-﻿using System.Diagnostics;
+﻿using AICore.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Context;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.Diagnostics;
 
 namespace AICore.SemanticKernel;
 
 public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISemanticKernelService
 {
+    //, IHubContext<ChatHub> hubContext
+    //public async Task SendMessage(Guid conversationId, string message)
+    //{
+    //    await hubContext.Clients.Groups(conversationId.ToString()).SendCoreAsync("ReceiveMessage", new[] { conversationId.ToString(), message });
+
+
+    //}
+
+
     public async Task<string> ImportText(string text, Guid conversationId, Guid activeDirectoryId)
     {
         TagCollection collection = new TagCollection();

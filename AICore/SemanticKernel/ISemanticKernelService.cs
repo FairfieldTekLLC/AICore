@@ -6,6 +6,7 @@ namespace AICore.SemanticKernel;
 
 public interface ISemanticKernelService
 {
+    //public Task SendMessage(Guid conversationId, string message);
     public Task<string> ImportText(string text, Guid conversationId, Guid activeDirectoryId);
     public Task<string> AskAsync(string query, Guid conversationId, Guid activeDirectoryId);
     public Task RemoveFile(string memoryKey, Guid activeDirectoryId);

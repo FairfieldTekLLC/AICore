@@ -1,19 +1,27 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using AICore.Classes;
+﻿using AICore.Classes;
 using AICore.Controllers.ViewModels;
+using AICore.Hubs;
 using AICore.Models;
 using AICore.SemanticKernel;
+using AICore.Service;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace AICore.Controllers;
 
-public class PromptController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService)
+public class PromptController(ILogger<HomeController> logger, ISemanticKernelService semanticKernelService, IHubContext<ChatHub> hubContext, IBackend backend)
     : BaseController(logger,
         semanticKernelService)
 {
+    private IBackend _backend = backend;
+    private IHubContext<ChatHub> _hubContext = hubContext;
+
     public IActionResult ProcessPrompt(Guid conversationId)
     {
         if (GetOwnerId() == Guid.Empty)
@@ -110,8 +118,13 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
     [Experimental("SKEXP0110")]
     [DisableRequestSizeLimit]
     public async Task<IActionResult> ImageToText(List<IFormFile> uploadedFile, Guid conversationId,
-        string txtpromptimgtotext)
+       string txtpromptimgtotext)
     {
+
+       
+
+
+        _backend.SendMessage(conversationId,"Starting up!");
         ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
 
         if (string.IsNullOrEmpty(txtpromptimgtotext))
@@ -119,6 +132,7 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
 
         if (uploadedFile == null || uploadedFile.Count == 0)
         {
+            _backend.SendMessage(conversationId, "No uploaded files, so I guess you are asking a question!");
             ChatMessageContentItemCollection col = new ChatMessageContentItemCollection
             {
                 new TextContent(txtpromptimgtotext)
@@ -132,8 +146,10 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
         }
         else
         {
+            _backend.SendMessage(conversationId, "Oh, I see you want me to upload files.");
             foreach (IFormFile postedFile in uploadedFile)
             {
+                _backend.SendMessage(conversationId, "Uploading file: " + postedFile.FileName);
                 using Stream fs = postedFile.OpenReadStream();
                 byte[] byteArray = new byte[fs.Length];
                 fs.Read(byteArray, 0, (int)fs.Length);
@@ -223,7 +239,7 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
 
         //Get the streaming chat message contents
 
-
+        _hubContext.SendMessage(conversationId, "Contacting the ChatService");
         IReadOnlyList<ChatMessageContent> result = await _semanticKernelService.GetChatService()
             .GetChatMessageContentsAsync(
                 _hist,
@@ -233,18 +249,24 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
 
         _hist = StaticHelpers.GetChatHistory(conversationId);
         StringBuilder output = new StringBuilder();
-        foreach (ChatMessageContent content in result) output.AppendLine(content.Content);
+        foreach (ChatMessageContent content in result) 
+            output.AppendLine(content.Content);
 
         string op = output.ToString();
         _hist.AddAssistantMessage(op);
 
         StaticHelpers.SaveChatHistory(conversationId, _hist);
-
+        _backend.SendMessage(conversationId, "All Done!");
+        _backend.SendMessage(conversationId, "Close Window");
 
         return new ContentResult
         {
             Content = BuildOutput(_hist),
             ContentType = "text/html"
         };
+    }
+    public async Task<IActionResult> Status()
+    {
+        return PartialView();
     }
 }
