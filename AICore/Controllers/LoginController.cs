@@ -53,6 +53,17 @@ public class LoginController(ILogger<HomeController> logger, ISemanticKernelServ
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(emailAddress) || string.IsNullOrEmpty(forename) || string.IsNullOrEmpty(surname))
             return Json(new LoginResultVm { Authorized = false, Message = "All information is required." });
 
+        if (username.Trim().Length<5)
+            return Json(new LoginResultVm { Authorized = false, Message = "Username is too short, minimum of 5 characters" });
+
+
+
+
+
+
+
+
+
         using NewsReaderContext ctx = new NewsReaderContext();
         var chk = ctx.Securityobjects.Any(x=>x.Username==username);
         if (chk)
