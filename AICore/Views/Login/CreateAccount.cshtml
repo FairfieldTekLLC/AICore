@@ -58,10 +58,13 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2"><input type="button" value="Submit" id="btn-create-account" onclick="Login()" class="btn btn-primary" /></td>
+        <td colspan="2"><input type="button" value="Submit" id="btn-create-account" onclick="Login()" class="btn btn-primary" /><input type="button" value="Cancel" class="btn btn-primary" onclick="CloseWindow()"/></td>
     </tr>
 </table>
 <script>
+    function CloseWindow(){
+          $('#staticBackdrop').modal('hide');
+    }
     function Login(){
         // Get the values from the input fields
         // Assuming you have jQuery included in your project

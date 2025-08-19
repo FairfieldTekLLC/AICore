@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using AICore.Controllers.ViewModels;
+﻿using AICore.Controllers.ViewModels;
 using AICore.Hubs;
 using AICore.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp.Models.Chat;
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AICore.Classes;
@@ -91,5 +92,19 @@ public static class StaticHelpers
         var emailValidation = new EmailAddressAttribute();
         return emailValidation.IsValid(emailAddress);
     }
+    public static string RegexParse(this string text, string sregex, string groupName, int captureIndex = 0)
+    {
+        try
+        {
+            Regex regex = new(sregex);
 
+            MatchCollection matches = regex.Matches(text);
+
+            return matches.Count > captureIndex ? matches[captureIndex].Groups[groupName].Captures[0].Value.Trim() : "";
+        }
+        catch (Exception e)
+        {
+            return "";
+        }
+    }
 }

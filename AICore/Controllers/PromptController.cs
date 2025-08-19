@@ -12,6 +12,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.RegularExpressions;
+using Markdig;
 
 namespace AICore.Controllers;
 
@@ -121,10 +123,10 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
        string txtpromptimgtotext)
     {
 
-       
 
 
-        _backend.SendMessage(conversationId,"Starting up!");
+
+        _backend.SendMessage(conversationId, "Starting up!");
         ChatHistory _hist = StaticHelpers.GetChatHistory(conversationId);
 
         if (string.IsNullOrEmpty(txtpromptimgtotext))
@@ -249,12 +251,13 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
 
         _hist = StaticHelpers.GetChatHistory(conversationId);
         StringBuilder output = new StringBuilder();
-        foreach (ChatMessageContent content in result) 
+        foreach (ChatMessageContent content in result)
+        {
             output.AppendLine(content.Content);
-
-        string op = output.ToString();
+        }
+        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        string op =Markdown.ToHtml(  output.ToString(),pipeline);
         _hist.AddAssistantMessage(op);
-
         StaticHelpers.SaveChatHistory(conversationId, _hist);
         _backend.SendMessage(conversationId, "All Done!");
         _backend.SendMessage(conversationId, "Close Window");
