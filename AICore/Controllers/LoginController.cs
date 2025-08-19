@@ -1,7 +1,10 @@
-﻿using AICore.Models;
+﻿using AICore.Classes;
+using AICore.Models;
 using AICore.SemanticKernel;
 using AICore.ViewModels;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Console;
 
 namespace AICore.Controllers;
 
@@ -9,22 +12,30 @@ public class LoginController(ILogger<HomeController> logger, ISemanticKernelServ
     : BaseController(logger,
         semanticKernelService)
 {
-    public IActionResult LoginOrCreate()
+    public IActionResult Login()
     {
         return View();
     }
 
-    public IActionResult LoginOrCreateFunction(string email, string password)
+    public IActionResult CreateAccount()
     {
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        return PartialView("CreateAccount");
+    }
+
+    [HttpPost]
+    public IActionResult Login(string username, string password)
+    {
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             return Json(new LoginResultVm { Authorized = false, Message = "Invalid password" });
+
+
         using NewsReaderContext ctx = new NewsReaderContext();
-        if (ctx.Securityobjects.Any(x => x.Emailaddress == email))
+        if (ctx.Securityobjects.Any(x => x.Username == username))
         {
-            if (ctx.Securityobjects.Any(x => x.Emailaddress == email && x.Pass == password))
+            if (ctx.Securityobjects.Any(x => x.Username== username && x.Pass == password))
             {
                 Securityobject? so =
-                    ctx.Securityobjects.FirstOrDefault(x => x.Emailaddress == email && x.Pass == password);
+                    ctx.Securityobjects.FirstOrDefault(x => x.Username == username && x.Pass == password);
                 HttpContext.Session.SetString("UserKey", so.Activedirectoryid.ToString());
                 return Json(new LoginResultVm { Authorized = true, Message = "Authorized" });
             }
@@ -32,20 +43,38 @@ public class LoginController(ILogger<HomeController> logger, ISemanticKernelServ
             return Json(new LoginResultVm { Authorized = false, Message = "Invalid password" });
         }
 
-        Securityobject o = new Securityobject
+        
+        return Json(new LoginResultVm { Authorized = false, Message = "Username or password is incorrect." });
+    }
+
+    [HttpPost]
+    public IActionResult CreateAccount(string username, string password, string emailAddress, string forename, string surname)
+    {
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(emailAddress) || string.IsNullOrEmpty(forename) || string.IsNullOrEmpty(surname))
+            return Json(new LoginResultVm { Authorized = false, Message = "All information is required." });
+
+        using NewsReaderContext ctx = new NewsReaderContext();
+        var chk = ctx.Securityobjects.Any(x=>x.Username==username);
+        if (chk)
+            return Json(new LoginResultVm { Authorized = false, Message = "Username already in use." });
+
+        if (!emailAddress.IsValidEmailAddress())
+            return Json(new LoginResultVm { Authorized = false, Message = "Invalid Email Address." });
+
+        Securityobject so = new Securityobject()
         {
-            Emailaddress = email,
-            Pass = password,
+            Username = username,
             Activedirectoryid = Guid.NewGuid(),
-            Forename = "",
-            Fullname = "",
+            Emailaddress = emailAddress,
+            Forename = forename,
+            Surname = surname,
+            Fullname = surname + ", " + forename,
             Isactive = 1,
             Isgroup = 0,
-            Surname = "",
-            Username = ""
+            Pass = password
         };
-        ctx.Securityobjects.Add(o);
+        ctx.Securityobjects.Add(so);
         ctx.SaveChanges();
-        return Json(new LoginResultVm { Authorized = true, Message = "Account Created" });
+        return Json(new LoginResultVm { Message = "Account Created", Authorized = true });
     }
 }

@@ -29,7 +29,9 @@ public class BaseController(ILogger<HomeController> logger, ISemanticKernelServi
 
     public override void OnActionExecuted(ActionExecutedContext context)
     {
-        if (context.ActionDescriptor.DisplayName.Equals("AICore.Controllers.LoginController.LoginOrCreate (AICore)"))
+        if (context.ActionDescriptor.DisplayName.Equals("AICore.Controllers.LoginController.Login (AICore)")
+            || (context.ActionDescriptor.DisplayName.Equals("AICore.Controllers.LoginController.CreateAccount (AICore)"))
+            )
             return;
 
         Debug.WriteLine(context.Controller.ToString());
@@ -40,7 +42,7 @@ public class BaseController(ILogger<HomeController> logger, ISemanticKernelServi
         }
         catch (Exception e)
         {
-            Response.Redirect("/Login/LoginOrCreate");
+            Response.Redirect("/Login/Login");
         }
     }
 }

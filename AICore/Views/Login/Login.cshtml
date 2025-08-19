@@ -11,10 +11,10 @@
     </tr>
     <tr>
         <td>
-            Email:
+            Username:
         </td>
         <td>
-            <input type="text" id="txtemail" name=""/>
+            <input type="text" id="txt-username" name="" required="true"/>
         </td>
     </tr>
     <tr>
@@ -22,27 +22,44 @@
             Password:
         </td>
         <td>
-            <input type="text" id="txtpass" name=""/>
+            <input type="text" id="txt-pass" name="" required="true"/>
         </td>
     </tr>
     <tr>
         <td colspan="2">
-            <input type="button" value="Login or create" onclick="Login()"/>
+            <div id="div-error-msg"><span id="error-msg"></span></div>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="button" value="Login or create" onclick="Login()" class="btn btn-primary" />
+            <button id="btn-create-account" type="button" class="btn btn-primary" data-id='@Url.Action("CreateAccount", "Login")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Create New Account</button>
         </td>
     </tr>
 </table>
 <script>
+
+    
+         $("#btn-create-account")
+                .click(function()
+                    {
+                    var lurl = String($(this).data('id'));
+                    $(".modal-body").load(lurl);
+
+                    }
+                );
     function Login(){
         // Get the values from the input fields
         // Assuming you have jQuery included in your project
-        var email1 = $("#txtemail").val();
-        var pass = $("#txtpass").val();
+        var username = $("#txt-username").val();
+        var pass = $("#txt-pass").val();
         var formData = new FormData();
-        formData.append('email',email1);
+        formData.append('username',username);
         formData.append('password',pass);
 
         $.ajax({
-               url: '@Url.Action("LoginOrCreateFunction", "Login")', // Your C# endpoint URL
+               url: '@Url.Action("Login", "Login")', // Your C# endpoint URL
                type: 'POST',
                data: formData,
                contentType: false, // Important: Don't set content type
@@ -53,6 +70,10 @@
                    {
 
                        window.location.replace('@Url.Action("ConversationList", "Conversation")');
+                   }
+                   else
+                   {
+                        $("#error-msg").text(response.Message)  ;
                    }
 
                },

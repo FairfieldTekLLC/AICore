@@ -1,0 +1,116 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<table style="width:100%">
+    <tr>
+        <td>
+            Desired Username
+        </td>
+        <td>
+            <input type="text" id="txt-desired-username" style="width:100%" required="true"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Password
+        </td>
+        <td>
+            <input type="password" id="txt-password1" style="width:100%" required="true" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Confirm Password
+        </td>
+        <td>
+            <input type="password" id="txt-password2" style="width:100%" required="true" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Email Address
+        </td>
+        <td>
+            <input type="email" id="txt-email" style="width:100%" required="true" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            First Name
+        </td>
+        <td>
+            <input type="text" id="txt-forename" style="width:100%" required="true" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Last Name:
+        </td>
+        <td>
+            <input type="text" id="txt-surname" style="width:100%" required="true" />
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <div id="div-error-msg"><span id="error-msg"></span></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><input type="button" value="Submit" id="btn-create-account" onclick="Login()" class="btn btn-primary" /></td>
+    </tr>
+</table>
+<script>
+    function Login(){
+        // Get the values from the input fields
+        // Assuming you have jQuery included in your project
+        var Username = $("#txt-desired-username").val();
+        var Password1 = $("#txt-password1").val();
+        var Password2 = $("#txt-password2").val();
+        var EmailAddress = $("#txt-email").val();
+        var Forename = $("#txt-forename").val();
+        var Surname = $("#txt-surname").val();
+
+        if (Password1 !== Password2)
+        {
+            $("#error-msg").text("Passwords must match");
+            return;
+        }
+
+
+
+        
+        var formData = new FormData();
+        formData.append('username',Username);
+        formData.append('password',Password1);
+        formData.append('emailAddress',EmailAddress);
+        formData.append('forename',Forename);
+        formData.append('surname',Surname);
+        
+
+        $.ajax({
+               url: '@Url.Action("CreateAccount", "Login")', // Your C# endpoint URL
+               type: 'POST',
+               data: formData,
+               contentType: false, // Important: Don't set content type
+               processData: false, // Important: Don't process data
+               success: function(response) {
+                  console.log(response);
+                   if (response.Authorized==true)
+                   {
+
+                       $('#staticBackdrop').modal('hide');
+                   }
+                   else
+                   {
+                       $("#error-msg").text(response.Message)  ;
+                   }
+
+               },
+               error: function(xhr, status, error) {
+                   $('#status').html('<span class="text-danger">' + error + '</span>');
+               }
+           });
+       }
+</script>

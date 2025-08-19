@@ -1,4 +1,5 @@
-﻿using AICore.Controllers.ViewModels;
+﻿using System.ComponentModel.DataAnnotations;
+using AICore.Controllers.ViewModels;
 using AICore.Hubs;
 using AICore.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -83,4 +84,12 @@ public static class StaticHelpers
 
 
     }
+    
+
+    public static bool IsValidEmailAddress(this string emailAddress)
+    {
+        var emailValidation = new EmailAddressAttribute();
+        return emailValidation.IsValid(emailAddress);
+    }
+
 }

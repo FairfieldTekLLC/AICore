@@ -10,6 +10,15 @@
     <link rel="stylesheet" href="~/AICore.styles.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
+@* <style>
+    .modal-content{
+        width:800px !important;
+    }
+
+    .modal-dialog{
+        width:800px !important;
+    }
+</style> *@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -34,23 +43,18 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+
             <!-- Modal -->
-            <div class="row justify-content-center">
-                <div class="col-md-6 mx-auto justify-content-center">
-                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" style="width:300px;height300px" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-body">
-                                </div>
-                            </div>
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" >
+                <div class="modal-dialog  modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-body">
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Modal -->
-            <div class="row">
-                @RenderBody()
-            </div>
+            @RenderBody()
         </main>
     </div>
 

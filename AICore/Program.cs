@@ -73,7 +73,7 @@ public class Program
         app.MapStaticAssets();
         app.MapControllerRoute(
                 "default",
-                "{controller=Login}/{action=LoginOrCreate}/{id?}")
+                "{controller=Login}/{action=Login}/{id?}")
             .WithStaticAssets();
         app.MapHub<ChatHub>("/chatHub");
         

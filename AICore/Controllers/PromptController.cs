@@ -25,10 +25,10 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
     public IActionResult ProcessPrompt(Guid conversationId)
     {
         if (GetOwnerId() == Guid.Empty)
-            Response.Redirect("/Home/LoginOrCreate");
+            Response.Redirect("/Home/Login");
 
         if (conversationId == Guid.Empty)
-            Response.Redirect("/Home/LoginOrCreate");
+            Response.Redirect("/Home/Login");
 
 
         ConversationVm vm = new ConversationVm();
