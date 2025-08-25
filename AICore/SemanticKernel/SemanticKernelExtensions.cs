@@ -49,6 +49,9 @@ public static class SemanticKernelExtensions
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
+
+        
+
         kernelBuilder.Services.AddSingleton<SearXNGSearchPlugin>();
         
 
@@ -95,19 +98,20 @@ public static class SemanticKernelExtensions
         
         
 
-
+        TextToSpeakPlugin textToSpeakPlugin = new TextToSpeakPlugin(ikernel, backend);
         SearXNGSearchPlugin internetSearchPlugin = new SearXNGSearchPlugin(ikernel,backend);
         InternetUrlLoadPlugin internetUrlLoadPlugin = new InternetUrlLoadPlugin(ikernel, backend);
         ComfyPlugin comfyPlugin = new ComfyPlugin(ikernel, backend);
 
-        kernel.ImportPluginFromObject(internetSearchPlugin, "Internet_Search");
-        //kernel.ImportPluginFromType<SearXNGSearchPlugin>();
-        kernel.ImportPluginFromObject(internetUrlLoadPlugin, "internetUrlLoadPlugin");
-        kernel.ImportPluginFromObject(comfyPlugin, "ComfyPlugin");
+        kernel.ImportPluginFromObject(internetSearchPlugin, "Internet_Search_plugin");
+        kernel.ImportPluginFromObject(internetUrlLoadPlugin, "internetUrlLoad_Plugin");
+        kernel.ImportPluginFromObject(comfyPlugin, "Comfy_Plugin");
+        kernel.ImportPluginFromObject(textToSpeakPlugin, "Text_to_speech_plugin");
 
-        //builder.Services.AddSingleton(internetSearchPlugin);
+        builder.Services.AddSingleton(internetSearchPlugin);
         builder.Services.AddSingleton(internetUrlLoadPlugin);
         builder.Services.AddSingleton(comfyPlugin);
+        builder.Services.AddSingleton(textToSpeakPlugin);
 
 
 

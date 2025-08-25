@@ -14,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
+#pragma warning disable SKEXP0001
 
 namespace AICore.Controllers;
 
@@ -82,10 +83,13 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
                             html += "<div>" + textContent.Text + "</div>";
                             break;
                         case ImageContent imageContent:
-                            html += "<div>" + "<img style='width:300px;height:300px' src='data:" +
-                                    imageContent.MimeType +
-                                    ";base64," +
-                                    Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
+                            html += "<div>" + "<img style='width:300px;height:300px' src='data:" + imageContent.MimeType + ";base64," + Convert.ToBase64String(imageContent.Data.Value.ToArray()) + "' />" + "</div>";
+                            break;
+                        case AudioContent audioContent:
+                            html += "<div>";
+                            html +=
+                                @"<audio controls><source  src='data:" + audioContent.MimeType + ";base64," + Convert.ToBase64String(audioContent.Data.Value.ToArray()) + "' type='audio/mpeg'>Your browser does not support the audio element.</audio>";
+                            html += "</div>";
                             break;
                     }
 
@@ -257,7 +261,21 @@ public class PromptController(ILogger<HomeController> logger, ISemanticKernelSer
         }
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
         string op =Markdown.ToHtml(  output.ToString(),pipeline);
-        _hist.AddAssistantMessage(op);
+
+
+        string mimeType1 = ".mp3".GetMimeTypeForFileExtension();
+        ChatMessageContentItemCollection col1 = new ChatMessageContentItemCollection
+        {
+            new TextContent(op, Config.Instance.Model),
+            new AudioContent(new ReadOnlyMemory<byte>(output.ToString().ToSpeech()), mimeType1)
+        };
+        _hist.AddMessage(AuthorRole.Assistant, col1);
+
+       
+
+
+
+
         StaticHelpers.SaveChatHistory(conversationId, _hist);
         _backend.SendMessage(conversationId, "All Done!");
         _backend.SendMessage(conversationId, "Close Window");

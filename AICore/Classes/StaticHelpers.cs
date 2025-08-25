@@ -1,11 +1,13 @@
 ﻿using AICore.Controllers.ViewModels;
 using AICore.Hubs;
 using AICore.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp.Models.Chat;
 using System.ComponentModel.DataAnnotations;
+using System.Speech.Synthesis;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -106,5 +108,38 @@ public static class StaticHelpers
         {
             return "";
         }
+    }
+
+    public static byte[] ConvertStreamToByteArray(this Stream sourceStream)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            sourceStream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
+        }
+    }
+
+
+
+    public static byte[] ToSpeech(this string whatToSay)
+    {
+#pragma warning disable CA1416
+        SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+
+        synthesizer.Volume = 100;  // 0...100
+        synthesizer.Rate = -2;     // -10...10
+
+        // Synchronous
+        using (Stream audioStream = new MemoryStream())
+        {
+            synthesizer.SelectVoiceByHints(VoiceGender.Female, VoiceAge.Teen);
+            synthesizer.SetOutputToWaveStream(audioStream);
+            synthesizer.Speak(whatToSay);
+            audioStream.Position = 0;
+            var dat = audioStream.ConvertStreamToByteArray();
+            return dat;
+        }
+#pragma warning restore CA1416
+        return null;
     }
 }

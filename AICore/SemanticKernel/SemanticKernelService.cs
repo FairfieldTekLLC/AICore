@@ -10,14 +10,7 @@ namespace AICore.SemanticKernel;
 
 public class SemanticKernelService(Kernel kernel, IKernelMemory memory) : ISemanticKernelService
 {
-    //, IHubContext<ChatHub> hubContext
-    //public async Task SendMessage(Guid conversationId, string message)
-    //{
-    //    await hubContext.Clients.Groups(conversationId.ToString()).SendCoreAsync("ReceiveMessage", new[] { conversationId.ToString(), message });
-
-
-    //}
-
+ 
 
     public async Task<string> ImportText(string text, Guid conversationId, Guid activeDirectoryId)
     {
