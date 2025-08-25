@@ -8,22 +8,27 @@
         <div class="col-md-6 mx-auto">
             <div class="container">
                 <div class="row">
-                    <div class="col-12 mx-auto text-center"><h1  style="width:100%;">Login</h1></div>
-                </div>
-                <div class="row">
-                    <div class="col-6 text-sm-end">Username:</div>
-                    <div class="col-6"><input type="text" id="txt-username" name="" required="true"/></div>
-                </div>
-                <div class="row">
-                    <div class="col-6 text-sm-end">Password:</div>
-                    <div class="col-6"><input type="text" id="txt-pass" name="" required="true"/></div>
-                </div>
-                <div class="row">
-                    <div class="col-12"><div id="div-error-msg"><span id="error-msg"></span></div></div>
+                    <div class="col-12 mx-auto text-center"><h1  style="width:100%;">AI Core - The Ollama Copilot</h1></div>
                 </div>
                 <div class="row">
                     <div class="col-12 mx-auto text-center">
-                        <input type="button" value="Login" onclick="Login()" class="btn btn-primary" />
+                        <h1 style="width:100%;">Login</h1></div>
+                </div>
+                <div class="row" style="background-color:whitesmoke">
+                    <div class="col-6 text-sm-end">Username:</div>
+                    <div class="col-6"><input type="text" id="txt-username" name="" required="true"/></div>
+                </div>
+                <div class="row" style="background-color:whitesmoke">
+                    <div class="col-6 text-sm-end">Password:</div>
+                    <div class="col-6"><input type="text" id="txt-pass" name="" required="true"/></div>
+                </div>
+                <div class="row" style="background-color:whitesmoke">
+                    <div class="col-12">
+                        <div id="div-error-msg"><span id="error-msg"></span></div></div>
+                </div>
+                <div class="row" style="background-color:whitesmoke">
+                    <div class="col-12 mx-auto text-center">
+                        <input type="button" value="Login" onclick="Login()" class="btn btn-primary"/>
                         <button id="btn-create-account" type="button" class="btn btn-primary" data-id='@Url.Action("CreateAccount", "Login")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Create</button>
                     </div>
                 </div>

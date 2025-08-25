@@ -1,4 +1,5 @@
 ﻿@using AICore.Controllers.ViewModels
+@using DocumentFormat.OpenXml
 @model List<AICore.Controllers.ViewModels.ConversationVm>
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -28,33 +29,61 @@
 
 
     }
-   
+
 
 </script>
-<h1>Welcome, @User.Identity.Name</h1>
+<div class="Container mx-auto" style="background-color:whitesmoke;width:80%">
+    <div class="row mx-auto"><h1>CoPilot Conversation List</h1></div>
+    <div class="row">
+        <div class="col-10"></div>
+        <div class="col-2">
+            <button id="btn-create-conversation" type="button" class="btn btn-primary" data-id='@Url.Action("CreateConversationView", "Conversation")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Create New Conversation</button>
+        </div>
+    </div>
 
-<button id="btn-create-conversation" type="button" class="btn btn-primary" data-id='@Url.Action("CreateConversationView", "Conversation")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Create New Conversation</button>
 
+    <div class="container" >
+        <div class="row">
+            @*                 <div class="col-2" style="visibility:collapse">
+                    ID
+                </div> *@
+            <div class="col-5 display-6">
+                Title
+            </div>
+            <div class="col-5 display-6">
+                Description
+            </div>
+            <div class="col-2 display-6">
+                Actions
+            </div>
+        </div>
+        @{
+            bool flip = true;
+            @foreach (ConversationVm conversation in Model)
+            {
+                flip = !flip;
 
-<table style="width:100%">
-    <tr>
-        <td>ID</td>
-        <td>Title</td>
-        <td>Description</td>
-        <td>Actions</td>
-    </tr>
-    @foreach (ConversationVm conversation in Model)
-    {
-        <tr>
-            <td>@conversation.Id</td>
-            <td>@conversation.Title</td>
-            <td>@conversation.Description</td>
-            <td>
-                <input value="Open" type="button" onclick="OpenChat('@conversation.Id')"/>
-            </td>
-            <td>
-                <input value="Delete" type="button" onclick="DeleteChat('@conversation.Id')"/>
-            </td>
-        </tr>
-    }
-</table>
+                <div class="row"
+                     @{
+                         if (flip)
+                         {
+                             WriteLiteral(" style='background-color:white' ");
+                         }
+                     }
+        >
+                    <div class="col-5">
+                        <span>@conversation.Title</span>
+                    </div>
+                    <div class="col-5">
+                        <span>@conversation.Description</span>
+                    </div>
+                    <div class="col-2">
+                        <input value="Open" type="button" onclick="OpenChat('@conversation.Id')" />
+                        <input value="Delete" type="button" onclick="DeleteChat('@conversation.Id')" />
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+</div>

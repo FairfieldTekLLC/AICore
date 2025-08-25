@@ -3,52 +3,74 @@
     ViewData["Title"] = "Home Page";
 }
 <script>
-     
+
 </script>
 <style>
-    .accordion-button{
-                background-color: aqua !important;
+    .accordion-button {
+        background-color: aqua !important;
         color: #343a40;
         border: 1px solid #ced4da;
     }
 </style>
-<div class="text-center">
-    <div class="container">
-        <div>
-            ConversationId: <span id="ConversationId">@Model.Id</span>
+<div class="container" style="width:80%;background-color:whitesmoke">
+    <div class="row">
+        <div class="col-2 pull-left">
+            <p style="height:100px"></p>
+            <p>
+                <h2>Examples:</h2>
+                <lo>
+                    <li>"Search the internet or Dog Breeds."</li>
+                    <li>"Summarize the different dog breeds in 10 paragraphs."</li>
+                    <li>"Draw me a picture of a cat sitting on a chair."</li>
+                    <li>What time is it right now?</li>
+                    <li>So forth and so on.</li>
+                </lo>
+
+            </p>
+
+
+        </div>
+        <div class="col-10">
+            <div class="text-center">
+                <div class="container">
+                    <div style="visibility:collapse">
+                        <span id="ConversationId">@Model.Id</span>
+                    </div>
+                </div>
+                <div class="container">
+                    <h1 class="display-4">AI Core - The Ollama Copilot</h1>
+                    <p>Enter your prompt below and click "Ask" to see the result.</p>
+                    
+                    <p></p>
+
+                </div>
+                <div>
+                    <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>
+
+                </div>
+                <div id="ImageToTextUpload">
+                    <span>Attach a file!</span>
+                    <input type="file" id="fileInput" value="Choose Image File" accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.ico,.svg,.pdf,.txt" />
+                    @* <button id="uploadButton" onclick="uploadFile()">Ask</button> *@
+                    <button id="btn-create-conversation" type="button" class="btn btn-primary" data-id='@Url.Action("status", "Prompt")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
+                    <div id="status"></div>
+                </div>
+                <div id="txt-output">
+                    @{
+                        if (Model.ConversationText != null)
+                        {
+                            WriteLiteral(Model.ConversationText);
+                        }
+                    }
+
+                </div>
+
+
+
+            </div>
         </div>
     </div>
-    <div class="container">
-        <h1 class="display-4">Welcome to the AI Prompt Generator</h1>
-        <p class="lead">This tool helps you create effective prompts for AI models.</p>
-        <p>Enter your prompt below and click "Ask" to see the result.</p>
-
-    </div>
-    <div>
-        <textarea id="txt-prompt" rows="2" style="width:100%"></textarea>
-        
-    </div>
-    <div id="ImageToTextUpload">
-        <span>Attach a file!</span>
-        <input type="file" id="fileInput" value="Choose Image File"accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.ico,.svg,.pdf,.txt"/>
-        @* <button id="uploadButton" onclick="uploadFile()">Ask</button> *@
-        <button id="btn-create-conversation" type="button" class="btn btn-primary" data-id='@Url.Action("status", "Prompt")' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
-        <div id="status"></div>
-    </div>
-    <div id="txt-output">
-        @{
-            if (Model.ConversationText != null)
-            {
-                WriteLiteral(Model.ConversationText);
-            }
-        }
-
-    </div>
-
-
-
 </div>
-*
 
 
 <script>
@@ -72,7 +94,7 @@
             formData.append('txtpromptimgtotext',prompt);
             formData.append('conversationId',conversationId);
 
-            
+
 
             $.ajax({
                 url: '@Url.Action("ImageToText", "Prompt")', // Your C# endpoint URL
@@ -91,7 +113,7 @@
                 }
             });
         }
-         
+
 
 
         function decodeHtmlEntities(encodedString) {
@@ -99,7 +121,7 @@
       textArea.innerHTML = encodedString;
       return textArea.value;
     }
-   
+
 </script>
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/chat.js"></script>
