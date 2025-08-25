@@ -9,6 +9,14 @@ I will warn you, if you don't have a decent GPU, gtx 3090 or greater the AI will
 
 Also, this project assumes your connected to a domain and uses negiotiate  authentication to identify the user.  I plan to add Forms authentication at some point, but I haven't gotten to it.
 
+# What this thing can do?
+1. Ocr Documents
+2. Read the result to the user
+3. Create Images
+4. Search the internet
+5. Generate computer speech
+6. And much more!
+
 # Resources used:
  1. Ollama
  2. ComfyUI
